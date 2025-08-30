@@ -27,6 +27,9 @@ jobs:
       - name: Check Dart format
         run: dart format --output=none --set-exit-if-changed .
 
+      - name: Flutter analyze
+        run: flutter analyze
+
   backend-formatter:
     name: Go Formatter Check
     runs-on: ubuntu-latest
