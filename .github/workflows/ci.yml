@@ -3,10 +3,6 @@ name: Formatter Check
 on:
   pull_request:
     branches: [main]
-    paths:
-      - "frontend/**"
-      - "backend/**"
-      - ".github/workflows/**"
 
 jobs:
   frontend-formatter:
