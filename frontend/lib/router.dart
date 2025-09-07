@@ -51,9 +51,7 @@ final goRouter = GoRouter(
                 child: IconButton(
                   iconSize: 40,
                   icon: const Icon(Icons.person),
-                  onPressed: () {
-                    print('ユーザーアイコンがタップされました');
-                  },
+                  onPressed: () {},
                 ),
               ),
             ],
