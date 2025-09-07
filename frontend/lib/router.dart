@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:frontend/pages/calendar/calendar_page.dart';
 import 'package:frontend/pages/home/home_page.dart';
 import 'package:frontend/pages/trend/trend_page.dart';
+import 'package:frontend/pages/workout_record/workout_record_page.dart';
 import 'package:go_router/go_router.dart';
 
 String _titleFor(int index) {
   switch (index) {
     case 0:
-      return 'ホーム';
+      return '筋トレ日記';
     case 1:
       return 'カレンダー';
     case 2:
       return '記録の推移';
     default:
-      return 'ホーム';
+      return '筋トレ日記';
   }
 }
 
@@ -39,7 +40,22 @@ final goRouter = GoRouter(
         final currentIndex = _indexFor(loc);
 
         return Scaffold(
-          appBar: AppBar(title: Text(_titleFor(currentIndex))),
+          appBar: AppBar(
+            title: Text(
+              _titleFor(currentIndex),
+              style: const TextStyle(fontSize: 25),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: IconButton(
+                  iconSize: 40,
+                  icon: const Icon(Icons.person),
+                  onPressed: () {},
+                ),
+              ),
+            ],
+          ),
           body: child,
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: currentIndex,
@@ -82,6 +98,11 @@ final goRouter = GoRouter(
         GoRoute(
           path: '/trends',
           pageBuilder: (_, __) => const NoTransitionPage(child: TrendPage()),
+        ),
+        GoRoute(
+          path: '/record',
+          pageBuilder: (_, __) =>
+              const NoTransitionPage(child: WorkoutRecordPage()),
         ),
       ],
     ),
