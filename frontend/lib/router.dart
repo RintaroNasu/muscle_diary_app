@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/calendar/calendar_page.dart';
 import 'package:frontend/pages/home/home_page.dart';
+import 'package:frontend/pages/login/login_page.dart';
+import 'package:frontend/pages/signup/signup_page.dart';
 import 'package:frontend/pages/trend/trend_page.dart';
 import 'package:frontend/pages/workout_record/workout_record_page.dart';
 import 'package:go_router/go_router.dart';
@@ -51,7 +53,9 @@ final goRouter = GoRouter(
                 child: IconButton(
                   iconSize: 40,
                   icon: const Icon(Icons.person),
-                  onPressed: () {},
+                  onPressed: () {
+                    context.go('/login');
+                  },
                 ),
               ),
             ],
@@ -103,6 +107,14 @@ final goRouter = GoRouter(
           path: '/record',
           pageBuilder: (_, __) =>
               const NoTransitionPage(child: WorkoutRecordPage()),
+        ),
+        GoRoute(
+          path: '/login',
+          pageBuilder: (_, __) => const NoTransitionPage(child: LoginPage()),
+        ),
+        GoRoute(
+          path: '/signup',
+          pageBuilder: (_, __) => const NoTransitionPage(child: SignupPage()),
         ),
       ],
     ),
