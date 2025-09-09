@@ -1,14 +1,14 @@
-package main
+package routes
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
-func main() {
-	e := echo.New()
+func Register(e *echo.Echo, conn *gorm.DB) {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, Echo!")
 	})
-	e.Logger.Fatal(e.Start(":8080"))
 }
