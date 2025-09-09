@@ -16,6 +16,7 @@ class AuthState {
       return false;
     }
   }
+
   AuthState copyWith({bool? isLoading, String? token, String? error}) =>
       AuthState(
         isLoading: isLoading ?? this.isLoading,
