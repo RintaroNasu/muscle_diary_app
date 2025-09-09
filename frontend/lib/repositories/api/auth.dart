@@ -11,6 +11,7 @@ Future<String?> readStoredToken() => _storage.read(key: _tokenKey);
 Future<String?> loginApi(String email, String password) async {
   final response = await http.post(
     Uri.parse('$_baseUrl/login'),
+    headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'email': email, 'password': password}),
   );
   if (response.statusCode == 200) {
@@ -22,9 +23,10 @@ Future<String?> loginApi(String email, String password) async {
 Future<String?> signupApi(String email, String password) async {
   final response = await http.post(
     Uri.parse('$_baseUrl/signup'),
+    headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'email': email, 'password': password}),
   );
-  if (response.statusCode == 200) {
+  if (response.statusCode == 201) {
     return response.body;
   }
   return null;

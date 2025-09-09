@@ -14,9 +14,9 @@ class SignupPage extends HookConsumerWidget {
     final confirmController = useTextEditingController();
 
     final authState = ref.watch(authProvider);
-
     ref.listen(authProvider, (previous, next) {
       if (previous?.token == null && next.token != null) {
+        if (!context.mounted) return;
         context.go('/');
       }
     });
