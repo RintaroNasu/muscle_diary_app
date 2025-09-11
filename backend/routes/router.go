@@ -19,4 +19,5 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	h := handler.NewAuthHandler(svc)
 
 	e.POST("/signup", h.SignUp)
+	e.POST("/login", h.Login)
 }

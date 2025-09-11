@@ -14,6 +14,7 @@ import (
 
 type AuthService interface {
 	Signup(email, password string) (*models.User, string, error)
+	Login(email, password string) (*models.User, string, error)
 	// Login(email, password string) (string, error)
 }
 
@@ -38,6 +39,23 @@ func (s *authService) Signup(email, password string) (*models.User, string, erro
 	u := &models.User{Email: email, Password: string(hash)}
 	if err := s.repo.Create(u); err != nil {
 		return nil, "", fmt.Errorf("create user failed: %w", err)
+	}
+
+	token, err := generateJWT(u.ID)
+	if err != nil {
+		return nil, "", fmt.Errorf("jwt generate failed: %w", err)
+	}
+	return u, token, nil
+}
+
+func (s *authService) Login(email, password string) (*models.User, string, error) {
+	u, err := s.repo.FindByEmail(email)
+	if err != nil {
+		return nil, "", fmt.Errorf("find user failed: %w", err)
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+		return nil, "", fmt.Errorf("password compare failed: %w", err)
 	}
 
 	token, err := generateJWT(u.ID)
