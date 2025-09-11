@@ -16,7 +16,7 @@ class HomePage extends StatelessWidget {
             height: 100,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 10, 114, 198),
+                backgroundColor: const Color.fromARGB(255, 21, 148, 253),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
