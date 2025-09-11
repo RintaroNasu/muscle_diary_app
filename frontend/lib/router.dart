@@ -66,32 +66,36 @@ final routerProvider = Provider<GoRouter>((ref) {
                     _titleFor(currentIndex),
                     style: const TextStyle(fontSize: 25),
                   ),
-                  actions: isAuthRoute ? null : [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: IconButton(
-                        iconSize: 40,
-                        icon: const Icon(Icons.person),
-                        onPressed: () {
-                          context.go('/profile');
-                        },
-                      ),
-                    ),
-                    if (authState.isLoggedIn)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: IconButton(
-                          icon: const Icon(Icons.logout),
-                          tooltip: 'ログアウト',
-                          onPressed: () async {
-                            await ref.read(authProvider.notifier).logout();
-                            if (context.mounted) {
-                              context.go('/login');
-                            }
-                          },
-                        ),
-                      ),
-                  ],
+                  actions: isAuthRoute
+                      ? null
+                      : [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: IconButton(
+                              iconSize: 40,
+                              icon: const Icon(Icons.person),
+                              onPressed: () {
+                                context.go('/profile');
+                              },
+                            ),
+                          ),
+                          if (authState.isLoggedIn)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: IconButton(
+                                icon: const Icon(Icons.logout),
+                                tooltip: 'ログアウト',
+                                onPressed: () async {
+                                  await ref
+                                      .read(authProvider.notifier)
+                                      .logout();
+                                  if (context.mounted) {
+                                    context.go('/login');
+                                  }
+                                },
+                              ),
+                            ),
+                        ],
                 ),
                 body: child,
                 bottomNavigationBar: isAuthRoute
