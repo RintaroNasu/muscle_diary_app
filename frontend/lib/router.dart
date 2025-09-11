@@ -5,7 +5,9 @@ import 'package:frontend/pages/login/login_page.dart';
 import 'package:frontend/pages/signup/signup_page.dart';
 import 'package:frontend/pages/trend/trend_page.dart';
 import 'package:frontend/pages/workout_record/workout_record_page.dart';
+import 'package:frontend/providers/auth_provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 String _titleFor(int index) {
   switch (index) {
@@ -41,53 +43,72 @@ final goRouter = GoRouter(
         final loc = state.uri.toString();
         final currentIndex = _indexFor(loc);
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(
-              _titleFor(currentIndex),
-              style: const TextStyle(fontSize: 25),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: IconButton(
-                  iconSize: 40,
-                  icon: const Icon(Icons.person),
-                  onPressed: () {
-                    context.go('/login');
-                  },
+        return Consumer(
+          builder: (context, ref, _) {
+            final authState = ref.watch(authProvider);
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(
+                  _titleFor(currentIndex),
+                  style: const TextStyle(fontSize: 25),
                 ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: IconButton(
+                      iconSize: 40,
+                      icon: const Icon(Icons.person),
+                      onPressed: () {
+                        context.go('/login');
+                      },
+                    ),
+                  ),
+                  if (authState.isLoggedIn)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: IconButton(
+                        icon: const Icon(Icons.logout),
+                        tooltip: 'ログアウト',
+                        onPressed: () async {
+                          await ref.read(authProvider.notifier).logout();
+                          if (context.mounted) {
+                            context.go('/login');
+                          }
+                        },
+                      ),
+                    ),
+                ],
               ),
-            ],
-          ),
-          body: child,
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: currentIndex,
-            onTap: (i) {
-              switch (i) {
-                case 0:
-                  context.go('/');
-                  break;
-                case 1:
-                  context.go('/calendar');
-                  break;
-                case 2:
-                  context.go('/trends');
-                  break;
-              }
-            },
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_month),
-                label: 'カレンダー',
+              body: child,
+              bottomNavigationBar: BottomNavigationBar(
+                currentIndex: currentIndex,
+                onTap: (i) {
+                  switch (i) {
+                    case 0:
+                      context.go('/');
+                      break;
+                    case 1:
+                      context.go('/calendar');
+                      break;
+                    case 2:
+                      context.go('/trends');
+                      break;
+                  }
+                },
+                items: const [
+                  BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.calendar_month),
+                    label: 'カレンダー',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.show_chart),
+                    label: '記録の推移',
+                  ),
+                ],
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.show_chart),
-                label: '記録の推移',
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
       routes: [

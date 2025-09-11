@@ -14,10 +14,14 @@ Future<String?> loginApi(String email, String password) async {
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'email': email, 'password': password}),
   );
+
   if (response.statusCode == 200) {
     return response.body;
+  } else if (response.statusCode == 401) {
+    throw Exception('メールアドレスまたはパスワードが間違っています');
+  } else {
+    throw Exception('ログインに失敗しました: ${response.statusCode}');
   }
-  return null;
 }
 
 Future<String?> signupApi(String email, String password) async {
@@ -28,6 +32,9 @@ Future<String?> signupApi(String email, String password) async {
   );
   if (response.statusCode == 201) {
     return response.body;
+  } else if (response.statusCode == 401) {
+    throw Exception('メールアドレスまたはパスワードが間違っています');
+  } else {
+    throw Exception('サインアップに失敗しました: ${response.statusCode}');
   }
-  return null;
 }
