@@ -55,6 +55,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) {
           final loc = state.uri.toString();
           final currentIndex = _indexFor(loc);
+          final isAuthRoute = (loc == '/login' || loc == '/signup');
 
           return Consumer(
             builder: (context, ref, _) {
@@ -65,7 +66,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     _titleFor(currentIndex),
                     style: const TextStyle(fontSize: 25),
                   ),
-                  actions: [
+                  actions: isAuthRoute ? null : [
                     Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: IconButton(
@@ -93,36 +94,38 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ],
                 ),
                 body: child,
-                bottomNavigationBar: BottomNavigationBar(
-                  currentIndex: currentIndex,
-                  onTap: (i) {
-                    switch (i) {
-                      case 0:
-                        context.go('/');
-                        break;
-                      case 1:
-                        context.go('/calendar');
-                        break;
-                      case 2:
-                        context.go('/trends');
-                        break;
-                    }
-                  },
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home),
-                      label: 'ホーム',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.calendar_month),
-                      label: 'カレンダー',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.show_chart),
-                      label: '記録の推移',
-                    ),
-                  ],
-                ),
+                bottomNavigationBar: isAuthRoute
+                    ? null
+                    : BottomNavigationBar(
+                        currentIndex: currentIndex,
+                        onTap: (i) {
+                          switch (i) {
+                            case 0:
+                              context.go('/');
+                              break;
+                            case 1:
+                              context.go('/calendar');
+                              break;
+                            case 2:
+                              context.go('/trends');
+                              break;
+                          }
+                        },
+                        items: const [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.home),
+                            label: 'ホーム',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.calendar_month),
+                            label: 'カレンダー',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.show_chart),
+                            label: '記録の推移',
+                          ),
+                        ],
+                      ),
               );
             },
           );
