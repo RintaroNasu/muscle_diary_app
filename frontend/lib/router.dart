@@ -10,6 +10,21 @@ import 'package:frontend/providers/auth_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+enum Routes {
+  home(path: '/', name: 'home'),
+  login(path: '/login', name: 'login'),
+  signup(path: '/signup', name: 'signup'),
+  calendar(path: '/calendar', name: 'calendar'),
+  trends(path: '/trends', name: 'trends'),
+  profile(path: '/profile', name: 'profile'),
+  record(path: '/record', name: 'record');
+
+  const Routes({required this.path, required this.name});
+
+  final String path;
+  final String name;
+}
+
 String _titleFor(int index) {
   switch (index) {
     case 0:
@@ -38,15 +53,16 @@ int _indexFor(String loc) {
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: Routes.login.path,
     redirect: (context, state) {
       final authState = ref.read(authProvider);
       final isLoggedIn = authState.isLoggedIn;
       final loc = state.matchedLocation;
-      final isAuthRoute = (loc == '/login' || loc == '/signup');
+      final isAuthRoute =
+          (loc == Routes.login.path || loc == Routes.signup.path);
 
-      if (!isLoggedIn && !isAuthRoute) return '/login';
-      if (isLoggedIn && isAuthRoute) return '/';
+      if (!isLoggedIn && !isAuthRoute) return Routes.login.path;
+      if (isLoggedIn && isAuthRoute) return Routes.home.path;
 
       return null;
     },
@@ -55,7 +71,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) {
           final loc = state.uri.toString();
           final currentIndex = _indexFor(loc);
-          final isAuthRoute = (loc == '/login' || loc == '/signup');
+          final isAuthRoute =
+              (loc == Routes.login.path || loc == Routes.signup.path);
 
           return Consumer(
             builder: (context, ref, _) {
@@ -75,7 +92,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                               iconSize: 40,
                               icon: const Icon(Icons.person),
                               onPressed: () {
-                                context.go('/profile');
+                                context.go(Routes.profile.path);
                               },
                             ),
                           ),
@@ -90,7 +107,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                                       .read(authProvider.notifier)
                                       .logout();
                                   if (context.mounted) {
-                                    context.go('/login');
+                                    context.go(Routes.login.path);
                                   }
                                 },
                               ),
@@ -105,13 +122,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                         onTap: (i) {
                           switch (i) {
                             case 0:
-                              context.go('/');
+                              context.go(Routes.home.path);
                               break;
                             case 1:
-                              context.go('/calendar');
+                              context.go(Routes.calendar.path);
                               break;
                             case 2:
-                              context.go('/trends');
+                              context.go(Routes.trends.path);
                               break;
                           }
                         },
@@ -136,33 +153,33 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
         routes: [
           GoRoute(
-            path: '/',
+            path: Routes.home.path,
             pageBuilder: (_, __) => const NoTransitionPage(child: HomePage()),
           ),
           GoRoute(
-            path: '/calendar',
+            path: Routes.calendar.path,
             pageBuilder: (_, __) =>
                 const NoTransitionPage(child: CalendarPage()),
           ),
           GoRoute(
-            path: '/trends',
+            path: Routes.trends.path,
             pageBuilder: (_, __) => const NoTransitionPage(child: TrendPage()),
           ),
           GoRoute(
-            path: '/record',
+            path: Routes.record.path,
             pageBuilder: (_, __) =>
                 const NoTransitionPage(child: WorkoutRecordPage()),
           ),
           GoRoute(
-            path: '/login',
+            path: Routes.login.path,
             pageBuilder: (_, __) => const NoTransitionPage(child: LoginPage()),
           ),
           GoRoute(
-            path: '/signup',
+            path: Routes.signup.path,
             pageBuilder: (_, __) => const NoTransitionPage(child: SignupPage()),
           ),
           GoRoute(
-            path: '/profile',
+            path: Routes.profile.path,
             pageBuilder: (_, __) =>
                 const NoTransitionPage(child: ProfilePage()),
           ),
