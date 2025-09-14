@@ -16,7 +16,8 @@ Future<String?> loginApi(String email, String password) async {
   );
 
   if (response.statusCode == 200) {
-    return response.body;
+    final data = jsonDecode(response.body);
+    return data['token'];
   } else if (response.statusCode == 401) {
     throw Exception('メールアドレスまたはパスワードが間違っています');
   } else {
@@ -31,7 +32,8 @@ Future<String?> signupApi(String email, String password) async {
     body: jsonEncode({'email': email, 'password': password}),
   );
   if (response.statusCode == 201) {
-    return response.body;
+    final data = jsonDecode(response.body);
+    return data['token'];
   } else if (response.statusCode == 401) {
     throw Exception('メールアドレスまたはパスワードが間違っています');
   } else {
