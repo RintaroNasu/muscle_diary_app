@@ -8,6 +8,12 @@ import 'package:frontend/providers/auth_provider.dart';
 class SignupPage extends HookConsumerWidget {
   const SignupPage({super.key});
 
+  bool _isValidEmail(String v) {
+    final email = v.trim();
+    final regex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+    return regex.hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
@@ -42,12 +48,10 @@ class SignupPage extends HookConsumerWidget {
     });
 
     Future<void> onSignup() async {
-      if (passwordController.text != confirmController.text) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('パスワードが一致しません')));
-        return;
-      }
+      final currentState = formKey.currentState;
+      if (currentState == null) return;
+      if (!currentState.validate()) return;
+
       await ref
           .read(authProvider.notifier)
           .signup(emailController.text.trim(), passwordController.text);
@@ -67,6 +71,12 @@ class SignupPage extends HookConsumerWidget {
                   controller: emailController,
                   decoration: const InputDecoration(labelText: 'メールアドレス'),
                   onChanged: (value) => emailController.text = value,
+                  validator: (value) {
+                    final v = (value ?? '').trim();
+                    if (v.isEmpty) return '必須項目です';
+                    if (!_isValidEmail(v)) return 'メールアドレスの形式が正しくありません';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -74,6 +84,12 @@ class SignupPage extends HookConsumerWidget {
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'パスワード'),
                   onChanged: (value) => passwordController.text = value,
+                  validator: (value) {
+                    final v = (value ?? '').trim();
+                    if (v.isEmpty) return '必須項目です';
+                    if (v.length < 6) return '6文字以上のパスワードを入力してください';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -81,6 +97,12 @@ class SignupPage extends HookConsumerWidget {
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'パスワード（確認）'),
                   onChanged: (value) => confirmController.text = value,
+                  validator: (value) {
+                    final v = value ?? '';
+                    if (v.isEmpty) return '必須項目です';
+                    if (v != passwordController.text) return 'パスワードが一致しません';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(

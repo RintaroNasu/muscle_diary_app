@@ -8,6 +8,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class LoginPage extends HookConsumerWidget {
   const LoginPage({super.key});
 
+  bool _isValidEmail(String v) {
+    final email = v.trim();
+    final regex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+    return regex.hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
@@ -39,6 +45,10 @@ class LoginPage extends HookConsumerWidget {
     });
 
     Future<void> onLogin() async {
+      final currentState = formKey.currentState;
+      if (currentState == null) return;
+      if (!currentState.validate()) return;
+
       await ref
           .read(authProvider.notifier)
           .login(emailController.text.trim(), passwordController.text);
@@ -57,17 +67,23 @@ class LoginPage extends HookConsumerWidget {
                 TextFormField(
                   controller: emailController,
                   decoration: InputDecoration(labelText: 'メールアドレス'),
-                  validator: (value) =>
-                      value?.isEmpty == true ? '必須項目です' : null,
-                  // onChanged: (value) => email.value = value,
+                  validator: (value) {
+                    final v = (value ?? '').trim();
+                    if (v.isEmpty) return '必須項目です';
+                    if (!_isValidEmail(v)) return '有効なメールアドレスを入力してください';
+                    return null;
+                  },
                 ),
                 TextFormField(
                   controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(labelText: 'パスワード'),
-                  validator: (value) =>
-                      value?.isEmpty == true ? '必須項目です' : null,
-                  // onChanged: (value) => password.value = value,
+                  validator: (value) {
+                    final v = (value ?? '').trim();
+                    if (v.isEmpty) return '必須項目です';
+                    if (v.length < 6) return '6文字以上のパスワードを入力してください';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
