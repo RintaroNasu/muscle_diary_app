@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:frontend/pages/workout_record/workout_record_page_controller.dart';
 
 const _exercises = ['ベンチプレス', 'スクワット', 'デッドリフト'];
 final _dateFmt = DateFormat('yyyy-MM-dd');
@@ -14,24 +15,33 @@ class WorkoutRecordPage extends HookConsumerWidget {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final weightController = useTextEditingController();
     final dateController = useTextEditingController();
-
     final selectedExercise = useState<String?>(null);
 
-    final sets = useState<List<Map<String, TextEditingController>>>([
-      {'weight': TextEditingController(), 'reps': TextEditingController()},
-    ]);
-
-    useEffect(() {
-      return () {
-        for (final set in sets.value) {
-          set['weight']?.dispose();
-          set['reps']?.dispose();
-        }
-      };
-    }, []);
+    final state = ref.watch(workoutRecordControllerProvider);
+    final controller = ref.read(workoutRecordControllerProvider.notifier);
 
     useListenable(weightController);
     useListenable(dateController);
+
+    // TODO: api接続した時利用する
+    // ref.listen(workoutRecordControllerProvider, (prev, next) {
+    //   if (!context.mounted) return;
+    //   if (prev?.successMessage != next.successMessage &&
+    //       next.successMessage != null) {
+    //     ScaffoldMessenger.of(
+    //       context,
+    //     ).showSnackBar(SnackBar(content: Text(next.successMessage!)));
+    //   }
+    //   if (prev?.errorMessage != next.errorMessage &&
+    //       next.errorMessage != null) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: Text(next.errorMessage!),
+    //         backgroundColor: Colors.red,
+    //       ),
+    //     );
+    //   }
+    // });
 
     String? required(String? v) =>
         (v == null || v.trim().isEmpty) ? '必須項目です' : null;
@@ -65,13 +75,6 @@ class WorkoutRecordPage extends HookConsumerWidget {
       if (picked != null) {
         dateController.text = _dateFmt.format(picked);
       }
-    }
-
-    void addSet() {
-      sets.value = [
-        ...sets.value,
-        {'weight': TextEditingController(), 'reps': TextEditingController()},
-      ];
     }
 
     return Scaffold(
@@ -110,84 +113,83 @@ class WorkoutRecordPage extends HookConsumerWidget {
                   validator: required,
                 ),
                 const SizedBox(height: 32),
-
-                ...sets.value.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final set = entry.value;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  children: [
+                    const Text(
+                      'セット',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: state.isSubmitting ? null : controller.addSet,
+                      icon: const Icon(Icons.add),
+                      tooltip: 'セットを追加',
+                    ),
+                  ],
+                ),
+                for (int i = 0; i < state.sets.length; i++) ...[
+                  Row(
                     children: [
-                      Text(
-                        '${index + 1}セット目',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          controller: state.sets[i].weight,
+                          decoration: const InputDecoration(
+                            labelText: '重量(kg)',
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          validator: requiredDouble,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: set['weight']!,
-                              decoration: const InputDecoration(
-                                labelText: '重量(kg)',
-                              ),
-                              validator: requiredDouble,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: set['reps']!,
-                              decoration: const InputDecoration(
-                                labelText: '回数',
-                              ),
-                              validator: requiredInt,
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: state.sets[i].reps,
+                          decoration: const InputDecoration(labelText: '回数'),
+                          keyboardType: TextInputType.number,
+                          validator: requiredInt,
+                        ),
                       ),
-                      const SizedBox(height: 24),
+                      IconButton(
+                        onPressed: state.isSubmitting
+                            ? null
+                            : () => controller.removeSet(i),
+                        icon: const Icon(Icons.delete_outline),
+                        tooltip: 'このセットを削除',
+                      ),
                     ],
-                  );
-                }),
-                OutlinedButton.icon(
-                  onPressed: addSet,
-                  icon: const Icon(Icons.add),
-                  label: const Text('セットを追加'),
-                ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  child: const Text('記録する'),
-                  onPressed: () {
-                    final currentState = formKey.currentState;
-                    if (currentState == null) return;
-                    if (!currentState.validate()) return;
+                  onPressed: state.isSubmitting
+                      ? null
+                      : () async {
+                          final f = formKey.currentState;
+                          if (f == null || !f.validate()) return;
+                          if (selectedExercise.value == null) return;
 
-                    final requestBody = {
-                      "body_weight":
-                          double.tryParse(weightController.text) ?? 0.0,
-                      "exercise_name": selectedExercise.value ?? "",
-                      "sets": sets.value.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final set = entry.value;
-                        return {
-                          "set": index + 1,
-                          "reps": int.tryParse(set['reps']!.text) ?? 0,
-                          "exercise_weight":
-                              double.tryParse(set['weight']!.text) ?? 0.0,
-                        };
-                      }).toList(),
-                      "trained_at": "${dateController.text}T18:00:00Z",
-                    };
-                    print(requestBody);
-                  },
+                          await controller.submit(
+                            bodyWeight: double.parse(
+                              weightController.text.trim(),
+                            ),
+                            exerciseName: selectedExercise.value!,
+                            trainedAtIso: '${dateController.text}T18:00:00Z',
+                          );
+                        },
+                  child: state.isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('記録する'),
                 ),
               ],
             ),
