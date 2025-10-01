@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import 'package:frontend/pages/workout_record/workout_record_page_controller.dart';
 
 const _exercises = ['ベンチプレス', 'スクワット', 'デッドリフト'];
@@ -23,25 +24,24 @@ class WorkoutRecordPage extends HookConsumerWidget {
     useListenable(weightController);
     useListenable(dateController);
 
-    // TODO: api接続した時利用する
-    // ref.listen(workoutRecordControllerProvider, (prev, next) {
-    //   if (!context.mounted) return;
-    //   if (prev?.successMessage != next.successMessage &&
-    //       next.successMessage != null) {
-    //     ScaffoldMessenger.of(
-    //       context,
-    //     ).showSnackBar(SnackBar(content: Text(next.successMessage!)));
-    //   }
-    //   if (prev?.errorMessage != next.errorMessage &&
-    //       next.errorMessage != null) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(
-    //         content: Text(next.errorMessage!),
-    //         backgroundColor: Colors.red,
-    //       ),
-    //     );
-    //   }
-    // });
+    ref.listen(workoutRecordControllerProvider, (prev, next) {
+      if (!context.mounted) return;
+      if (prev?.successMessage != next.successMessage &&
+          next.successMessage != null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.successMessage!)));
+      }
+      if (prev?.errorMessage != next.errorMessage &&
+          next.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
 
     String? required(String? v) =>
         (v == null || v.trim().isEmpty) ? '必須項目です' : null;
@@ -181,6 +181,9 @@ class WorkoutRecordPage extends HookConsumerWidget {
                             ),
                             exerciseName: selectedExercise.value!,
                             trainedAtIso: '${dateController.text}T18:00:00Z',
+                            onSuccess: () {
+                              context.go('/');
+                            },
                           );
                         },
                   child: state.isSubmitting

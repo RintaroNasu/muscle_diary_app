@@ -81,6 +81,7 @@ class WorkoutRecordController extends StateNotifier<WorkoutRecordState> {
     required double bodyWeight,
     required String exerciseName,
     required String trainedAtIso,
+    VoidCallback? onSuccess,
   }) async {
     try {
       state = state.copyWith(
@@ -103,6 +104,7 @@ class WorkoutRecordController extends StateNotifier<WorkoutRecordState> {
       await repo.create(body);
 
       state = state.copyWith(isSubmitting: false, successMessage: '記録を保存しました');
+      onSuccess?.call();
     } catch (e) {
       state = state.copyWith(isSubmitting: false, errorMessage: '保存に失敗: $e');
     }
