@@ -100,7 +100,6 @@ class WorkoutRecordController extends StateNotifier<WorkoutRecordState> {
         'sets': setsPayload,
         'trained_at': trainedAtIso,
       };
-      print(body);
       await repo.create(body);
 
       state = state.copyWith(isSubmitting: false, successMessage: '記録を保存しました');
