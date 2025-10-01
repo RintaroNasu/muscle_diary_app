@@ -6,5 +6,9 @@ import (
 )
 
 func Migrate(conn *gorm.DB) error {
-	return conn.AutoMigrate(&models.User{})
+	return conn.AutoMigrate(
+		&models.User{},
+		&models.WorkoutRecord{},
+		&models.WorkoutSet{},
+	)
 }
