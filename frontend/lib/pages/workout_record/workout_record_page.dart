@@ -93,7 +93,7 @@ class WorkoutRecordPage extends HookConsumerWidget {
                 const SizedBox(height: 24),
                 DropdownButtonFormField(
                   decoration: const InputDecoration(labelText: 'トレーニング名'),
-                  value: selectedExercise.value,
+                  initialValue: selectedExercise.value,
                   items: _exercises
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
