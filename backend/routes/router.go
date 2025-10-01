@@ -22,9 +22,10 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	e.POST("/signup", authHandler.SignUp)
 	e.POST("/login", authHandler.Login)
 
+	authRequired := e.Group("", middleware.JWTMiddleware())
+
 	workoutRepo := repository.NewWorkoutRepository(conn)
 	workoutSvc := service.NewWorkoutService(workoutRepo)
 	workoutHandler := handler.NewWorkoutHandler(workoutSvc)
-	workoutGroup := e.Group("/training_records", middleware.JWTMiddleware())
-	workoutGroup.POST("", workoutHandler.CreateWorkoutRecord)
+	authRequired.POST("/training_records", workoutHandler.CreateWorkoutRecord)
 }
