@@ -28,10 +28,10 @@ type workoutService struct {
 
 func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedAt time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error) {
 	record := &models.WorkoutRecord{
-		UserID:       userID,
-		ExerciseID:   exerciseID,
-		BodyWeight:   bodyWeight,
-		TrainedAt:    trainedAt,
+		UserID:     userID,
+		ExerciseID: exerciseID,
+		BodyWeight: bodyWeight,
+		TrainedAt:  trainedAt,
 	}
 
 	for _, setData := range sets {

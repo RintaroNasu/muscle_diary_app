@@ -47,6 +47,7 @@ class WorkoutRecordPage extends HookConsumerWidget {
           isLoadingExercises.value = false;
         }
       }
+
       loadExercises();
       return null;
     }, []);
