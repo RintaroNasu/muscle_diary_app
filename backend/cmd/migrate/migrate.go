@@ -10,5 +10,6 @@ func Migrate(conn *gorm.DB) error {
 		&models.User{},
 		&models.WorkoutRecord{},
 		&models.WorkoutSet{},
+		&models.Exercise{},
 	)
 }
