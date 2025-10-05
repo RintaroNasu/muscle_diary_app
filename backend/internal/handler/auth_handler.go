@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/service"
@@ -28,7 +29,9 @@ func NewAuthHandler(svc service.AuthService) AuthHandler {
 func (h *authHandler) SignUp(c echo.Context) error {
 	var req authReq
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid body"})
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("invalid body: %v", err),
+		})
 	}
 
 	u, token, err := h.svc.Signup(req.Email, req.Password)
@@ -45,7 +48,9 @@ func (h *authHandler) SignUp(c echo.Context) error {
 func (h *authHandler) Login(c echo.Context) error {
 	var req authReq
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid body"})
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("invalid body: %v", err),
+		})
 	}
 
 	u, token, err := h.svc.Login(req.Email, req.Password)
