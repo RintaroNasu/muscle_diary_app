@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -22,10 +23,10 @@ func NewWorkoutHandler(svc service.WorkoutService) WorkoutHandler {
 }
 
 type CreateWorkoutRecordRequest struct {
-	BodyWeight   float64             `json:"body_weight"`
-	ExerciseName string              `json:"exercise_name"`
-	Sets         []WorkoutSetRequest `json:"sets"`
-	TrainedAt    string              `json:"trained_at"`
+	BodyWeight float64             `json:"body_weight"`
+	ExerciseID uint                `json:"exercise_id"`
+	Sets       []WorkoutSetRequest `json:"sets"`
+	TrainedAt  string              `json:"trained_at"`
 }
 
 type WorkoutSetRequest struct {
@@ -38,13 +39,17 @@ func (h *workoutHandler) CreateWorkoutRecord(c echo.Context) error {
 
 	var req CreateWorkoutRecordRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("invalid request body: %v", err),
+		})
 	}
 	userID := middleware.GetUserID(c)
 
 	trainedAt, err := time.Parse(time.RFC3339, req.TrainedAt)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid date format"})
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("invalid date format: %v", err),
+		})
 	}
 
 	var sets []service.WorkoutSetData
@@ -56,7 +61,7 @@ func (h *workoutHandler) CreateWorkoutRecord(c echo.Context) error {
 		})
 	}
 
-	record, err := h.svc.CreateWorkoutRecord(userID, req.BodyWeight, req.ExerciseName, trainedAt, sets)
+	record, err := h.svc.CreateWorkoutRecord(userID, req.BodyWeight, req.ExerciseID, trainedAt, sets)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

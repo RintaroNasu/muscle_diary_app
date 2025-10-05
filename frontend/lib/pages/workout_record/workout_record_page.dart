@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:frontend/models/exercise.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:frontend/pages/workout_record/workout_record_page_controller.dart';
+import 'package:frontend/repositories/api/exercise_records.dart';
 
-const _exercises = ['ベンチプレス', 'スクワット', 'デッドリフト'];
 final _dateFmt = DateFormat('yyyy-MM-dd');
 
 class WorkoutRecordPage extends HookConsumerWidget {
@@ -16,13 +17,40 @@ class WorkoutRecordPage extends HookConsumerWidget {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final weightController = useTextEditingController();
     final dateController = useTextEditingController();
-    final selectedExercise = useState<String?>(null);
+    final selectedExercise = useState<Exercise?>(null);
+    final exercises = useState<List<Exercise>>([]);
+    final isLoadingExercises = useState<bool>(true);
 
     final state = ref.watch(workoutRecordControllerProvider);
     final controller = ref.read(workoutRecordControllerProvider.notifier);
 
     useListenable(weightController);
     useListenable(dateController);
+
+    useEffect(() {
+      Future<void> loadExercises() async {
+        try {
+          final exerciseList = await getExercises();
+          exercises.value = exerciseList
+              .map((e) => Exercise.fromJson(e))
+              .toList();
+          isLoadingExercises.value = false;
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('種目の取得に失敗しました: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          isLoadingExercises.value = false;
+        }
+      }
+
+      loadExercises();
+      return null;
+    }, []);
 
     ref.listen(workoutRecordControllerProvider, (prev, next) {
       if (!context.mounted) return;
@@ -91,14 +119,14 @@ class WorkoutRecordPage extends HookConsumerWidget {
                   validator: requiredDouble,
                 ),
                 const SizedBox(height: 24),
-                DropdownButtonFormField(
-                  decoration: const InputDecoration(labelText: 'トレーニング名'),
+                DropdownButtonFormField<Exercise>(
                   value: selectedExercise.value,
-                  items: _exercises
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  items: exercises.value
+                      .map(
+                        (e) => DropdownMenuItem(value: e, child: Text(e.name)),
+                      )
                       .toList(),
                   onChanged: (v) => selectedExercise.value = v,
-                  validator: required,
                 ),
                 const SizedBox(height: 24),
                 TextFormField(
@@ -179,7 +207,7 @@ class WorkoutRecordPage extends HookConsumerWidget {
                             bodyWeight: double.parse(
                               weightController.text.trim(),
                             ),
-                            exerciseName: selectedExercise.value!,
+                            exerciseId: selectedExercise.value!.id,
                             trainedAtIso: '${dateController.text}T18:00:00Z',
                             onSuccess: () {
                               context.go('/');

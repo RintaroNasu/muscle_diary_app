@@ -27,5 +27,11 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	workoutRepo := repository.NewWorkoutRepository(conn)
 	workoutSvc := service.NewWorkoutService(workoutRepo)
 	workoutHandler := handler.NewWorkoutHandler(workoutSvc)
+
+	exRepo := repository.NewExerciseRepository(conn)
+	exSvc := service.NewExerciseService(exRepo)
+	exHandler := handler.NewExerciseHandler(exSvc)
+
+	authRequired.GET("/exercises", exHandler.List)
 	authRequired.POST("/training_records", workoutHandler.CreateWorkoutRecord)
 }

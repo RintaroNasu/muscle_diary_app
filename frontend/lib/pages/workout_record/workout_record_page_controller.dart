@@ -48,13 +48,11 @@ class WorkoutRecordState {
 
 final workoutRecordControllerProvider =
     StateNotifierProvider<WorkoutRecordController, WorkoutRecordState>(
-      (ref) => WorkoutRecordController(WorkoutRecordRepository()),
+      (ref) => WorkoutRecordController(),
     );
 
 class WorkoutRecordController extends StateNotifier<WorkoutRecordState> {
-  WorkoutRecordController(this.repo) : super(const WorkoutRecordState());
-
-  final WorkoutRecordRepository repo;
+  WorkoutRecordController() : super(const WorkoutRecordState());
 
   void addSet() {
     final next = [...state.sets, SetCtrls()];
@@ -79,7 +77,7 @@ class WorkoutRecordController extends StateNotifier<WorkoutRecordState> {
 
   Future<void> submit({
     required double bodyWeight,
-    required String exerciseName,
+    required int exerciseId,
     required String trainedAtIso,
     VoidCallback? onSuccess,
   }) async {
@@ -96,11 +94,11 @@ class WorkoutRecordController extends StateNotifier<WorkoutRecordState> {
 
       final body = {
         'body_weight': bodyWeight,
-        'exercise_name': exerciseName,
+        'exercise_id': exerciseId,
         'sets': setsPayload,
         'trained_at': trainedAtIso,
       };
-      await repo.create(body);
+      await createWorkoutRecord(body);
 
       state = state.copyWith(isSubmitting: false, successMessage: '記録を保存しました');
       onSuccess?.call();

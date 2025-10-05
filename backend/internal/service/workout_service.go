@@ -9,7 +9,7 @@ import (
 )
 
 type WorkoutService interface {
-	CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseName string, trainedAt time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
+	CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedAt time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
 }
 
 type WorkoutSetData struct {
@@ -26,12 +26,12 @@ type workoutService struct {
 	repo repository.WorkoutRepository
 }
 
-func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseName string, trainedAt time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error) {
+func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedAt time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error) {
 	record := &models.WorkoutRecord{
-		UserID:       userID,
-		ExerciseName: exerciseName,
-		BodyWeight:   bodyWeight,
-		TrainedAt:    trainedAt,
+		UserID:     userID,
+		ExerciseID: exerciseID,
+		BodyWeight: bodyWeight,
+		TrainedAt:  trainedAt,
 	}
 
 	for _, setData := range sets {

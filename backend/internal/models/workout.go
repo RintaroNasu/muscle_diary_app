@@ -8,11 +8,11 @@ import (
 
 type WorkoutRecord struct {
 	gorm.Model
-	UserID       uint
-	ExerciseName string
-	BodyWeight   float64
-	TrainedAt    time.Time
-	Sets         []WorkoutSet `gorm:"constraint:OnDelete:CASCADE"`
+	UserID     uint
+	ExerciseID uint `gorm:"foreignKey:ExerciseID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	BodyWeight float64
+	TrainedAt  time.Time
+	Sets       []WorkoutSet `gorm:"constraint:OnDelete:CASCADE"`
 }
 
 type WorkoutSet struct {
