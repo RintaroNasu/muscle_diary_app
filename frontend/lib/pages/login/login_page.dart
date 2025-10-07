@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:frontend/providers/auth_provider.dart';
 import 'package:frontend/widgets/unfocus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:frontend/pages/login/login_page_controller.dart';
+import 'package:frontend/providers/auth_provider.dart';
 
 class LoginPage extends HookConsumerWidget {
   const LoginPage({super.key});
-
-  bool _isValidEmail(String v) {
-    final email = v.trim();
-    final regex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    return regex.hasMatch(email);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
-    final authState = ref.watch(authProvider);
+    final state = ref.watch(loginControllerProvider);
+    final controller = ref.read(loginControllerProvider.notifier);
 
     useListenable(emailController);
     useListenable(passwordController);
@@ -28,31 +24,20 @@ class LoginPage extends HookConsumerWidget {
         emailController.text.trim().isNotEmpty &&
         passwordController.text.isNotEmpty;
 
-    ref.listen<bool>(authProvider.select((s) => s.isLoggedIn), (
-      prev,
-      loggedIn,
-    ) {
-      if (loggedIn) {
+    ref.listen(authProvider, (prev, next) {
+      if (!context.mounted) return;
+      if (prev?.isLoggedIn != next.isLoggedIn && next.isLoggedIn) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('ログインが完了しました')));
         context.go('/');
       }
+      if (prev?.error != next.error && next.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
+        );
+      }
     });
-    ref.listen<String?>(authProvider.select((s) => s.error), (prev, err) {
-      if (err == null || err == prev) return;
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(err), backgroundColor: Colors.red));
-    });
-
-    Future<void> onLogin() async {
-      final currentState = formKey.currentState;
-      if (currentState == null) return;
-      if (!currentState.validate()) return;
-
-      await ref
-          .read(authProvider.notifier)
-          .login(emailController.text.trim(), passwordController.text);
-    }
 
     return UnFocus(
       child: Scaffold(
@@ -60,7 +45,6 @@ class LoginPage extends HookConsumerWidget {
           padding: const EdgeInsets.all(16),
           child: Form(
             key: formKey,
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -70,7 +54,9 @@ class LoginPage extends HookConsumerWidget {
                   validator: (value) {
                     final v = (value ?? '').trim();
                     if (v.isEmpty) return '必須項目です';
-                    if (!_isValidEmail(v)) return '有効なメールアドレスを入力してください';
+                    if (!controller.isValidEmail(v)) {
+                      return '有効なメールアドレスを入力してください';
+                    }
                     return null;
                   },
                 ),
@@ -87,10 +73,25 @@ class LoginPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: (!isFormFilled || authState.isLoading)
+                  onPressed: (!isFormFilled || state.isLoading)
                       ? null
-                      : onLogin,
-                  child: Text(authState.isLoading ? 'ログイン中...' : 'ログイン'),
+                      : () async {
+                          final currentState = formKey.currentState;
+                          if (currentState == null) return;
+                          if (!currentState.validate()) return;
+
+                          await controller.login(
+                            emailController.text.trim(),
+                            passwordController.text,
+                          );
+                        },
+                  child: state.isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('ログイン'),
                 ),
                 const SizedBox(height: 12),
                 TextButton(
