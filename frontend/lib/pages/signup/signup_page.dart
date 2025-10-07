@@ -3,16 +3,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:frontend/widgets/unfocus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frontend/pages/signup/signup_page_controller.dart';
 import 'package:frontend/providers/auth_provider.dart';
 
 class SignupPage extends HookConsumerWidget {
   const SignupPage({super.key});
-
-  bool _isValidEmail(String v) {
-    final email = v.trim();
-    final regex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    return regex.hasMatch(email);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,7 +15,8 @@ class SignupPage extends HookConsumerWidget {
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
     final confirmController = useTextEditingController();
-    final authState = ref.watch(authProvider);
+    final state = ref.watch(signupControllerProvider);
+    final controller = ref.read(signupControllerProvider.notifier);
 
     useListenable(emailController);
     useListenable(passwordController);
@@ -31,31 +27,20 @@ class SignupPage extends HookConsumerWidget {
         passwordController.text.isNotEmpty &&
         confirmController.text.isNotEmpty;
 
-    ref.listen<bool>(authProvider.select((s) => s.isLoggedIn), (
-      prev,
-      loggedIn,
-    ) {
-      if (loggedIn) {
+    ref.listen(authProvider, (prev, next) {
+      if (!context.mounted) return;
+      if (prev?.isLoggedIn != next.isLoggedIn && next.isLoggedIn) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('サインアップが完了しました')));
         context.go('/');
       }
+      if (prev?.error != next.error && next.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
+        );
+      }
     });
-    ref.listen<String?>(authProvider.select((s) => s.error), (prev, err) {
-      if (err == null || err == prev) return;
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(err), backgroundColor: Colors.red));
-    });
-
-    Future<void> onSignup() async {
-      final currentState = formKey.currentState;
-      if (currentState == null) return;
-      if (!currentState.validate()) return;
-
-      await ref
-          .read(authProvider.notifier)
-          .signup(emailController.text.trim(), passwordController.text);
-    }
 
     return UnFocus(
       child: Scaffold(
@@ -73,7 +58,9 @@ class SignupPage extends HookConsumerWidget {
                   validator: (value) {
                     final v = (value ?? '').trim();
                     if (v.isEmpty) return '必須項目です';
-                    if (!_isValidEmail(v)) return 'メールアドレスの形式が正しくありません';
+                    if (!controller.isValidEmail(v)) {
+                      return 'メールアドレスの形式が正しくありません';
+                    }
                     return null;
                   },
                 ),
@@ -103,10 +90,19 @@ class SignupPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: (authState.isLoading || !isFormValid)
+                  onPressed: (state.isLoading || !isFormValid)
                       ? null
-                      : onSignup,
-                  child: authState.isLoading
+                      : () async {
+                          final currentState = formKey.currentState;
+                          if (currentState == null) return;
+                          if (!currentState.validate()) return;
+
+                          await controller.signup(
+                            emailController.text.trim(),
+                            passwordController.text,
+                          );
+                        },
+                  child: state.isLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
