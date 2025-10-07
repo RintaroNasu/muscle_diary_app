@@ -70,7 +70,6 @@ class SignupPage extends HookConsumerWidget {
                 TextFormField(
                   controller: emailController,
                   decoration: const InputDecoration(labelText: 'メールアドレス'),
-                  onChanged: (value) => emailController.text = value,
                   validator: (value) {
                     final v = (value ?? '').trim();
                     if (v.isEmpty) return '必須項目です';
@@ -83,7 +82,6 @@ class SignupPage extends HookConsumerWidget {
                   controller: passwordController,
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'パスワード'),
-                  onChanged: (value) => passwordController.text = value,
                   validator: (value) {
                     final v = (value ?? '').trim();
                     if (v.isEmpty) return '必須項目です';
@@ -96,7 +94,6 @@ class SignupPage extends HookConsumerWidget {
                   controller: confirmController,
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'パスワード（確認）'),
-                  onChanged: (value) => confirmController.text = value,
                   validator: (value) {
                     final v = value ?? '';
                     if (v.isEmpty) return '必須項目です';
