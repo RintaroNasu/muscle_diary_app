@@ -146,31 +146,31 @@ func (h *workoutHandler) GetMonthRecordDays(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
 	if yearStr == "" || monthStr == "" {
-			return c.JSON(http.StatusBadRequest, map[string]string{
-					"error": "year and month are required (e.g. ?year=2025&month=10)",
-			})
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "year and month are required (e.g. ?year=2025&month=10)",
+		})
 	}
 
 	year, err := strconv.Atoi(yearStr)
 	if err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid year"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid year"})
 	}
 
 	month, err := strconv.Atoi(monthStr)
 	if err != nil || month < 1 || month > 12 {
-			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid month"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid month"})
 	}
 
 	days, err := h.svc.GetMonthRecordDays(userID, year, month)
 	if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{
-					"error": fmt.Sprintf("failed to get month record days: %v", err),
-			})
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("failed to get month record days: %v", err),
+		})
 	}
 
 	out := make([]string, 0, len(days))
 	for _, d := range days {
-			out = append(out, d.Format("2006-01-02"))
+		out = append(out, d.Format("2006-01-02"))
 	}
 	return c.JSON(http.StatusOK, out)
 }

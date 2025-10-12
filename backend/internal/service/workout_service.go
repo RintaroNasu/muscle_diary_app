@@ -62,12 +62,12 @@ func (s *workoutService) GetDailyRecords(userID uint, day time.Time) ([]models.W
 
 func (s *workoutService) GetMonthRecordDays(userID uint, year int, month int) ([]time.Time, error) {
 	if month < 1 || month > 12 {
-			return nil, fmt.Errorf("invalid month: %d", month)
+		return nil, fmt.Errorf("invalid month: %d", month)
 	}
 
 	days, err := s.repo.FindRecordDaysInMonth(userID, year, month)
 	if err != nil {
-			return nil, fmt.Errorf("fetch month record days failed: %w", err)
+		return nil, fmt.Errorf("fetch month record days failed: %w", err)
 	}
 	return days, nil
 }

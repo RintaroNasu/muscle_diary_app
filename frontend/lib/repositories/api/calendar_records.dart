@@ -54,7 +54,9 @@ Future<Set<DateTime>> fetchMonthRecordDays(int year, int month) async {
   }
 
   final res = await http.get(
-    Uri.parse('$_baseUrl/training_records/monthly_days?year=$year&month=$month'),
+    Uri.parse(
+      '$_baseUrl/training_records/monthly_days?year=$year&month=$month',
+    ),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
