@@ -6,7 +6,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 const _baseUrl = 'http://localhost:8080';
 
-Future<List<Map<String, dynamic>>> fetchDayRecords(Ref ref, DateTime date) async {
+Future<List<Map<String, dynamic>>> fetchDayRecords(
+  Ref ref,
+  DateTime date,
+) async {
   final token = await readStoredToken();
   if (token == null || token.isEmpty) {
     throw Exception('未ログインのため記録を取得できません（トークンなし）');
