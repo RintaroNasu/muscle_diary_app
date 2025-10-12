@@ -208,7 +208,7 @@ class WorkoutRecordPage extends HookConsumerWidget {
                               weightController.text.trim(),
                             ),
                             exerciseId: selectedExercise.value!.id,
-                            trainedAtIso: '${dateController.text}T18:00:00Z',
+                            trainedOn: dateController.text,
                             onSuccess: () {
                               context.go('/');
                             },

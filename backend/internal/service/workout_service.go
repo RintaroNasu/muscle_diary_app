@@ -9,7 +9,9 @@ import (
 )
 
 type WorkoutService interface {
-	CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedAt time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
+	CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
+	GetDailyRecords(userID uint, day time.Time) ([]models.WorkoutRecord, error)
+	GetMonthRecordDays(userID uint, year int, month int) ([]time.Time, error)
 }
 
 type WorkoutSetData struct {
@@ -26,12 +28,12 @@ type workoutService struct {
 	repo repository.WorkoutRepository
 }
 
-func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedAt time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error) {
+func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error) {
 	record := &models.WorkoutRecord{
 		UserID:     userID,
 		ExerciseID: exerciseID,
 		BodyWeight: bodyWeight,
-		TrainedAt:  trainedAt,
+		TrainedOn:  trainedOn,
 	}
 
 	for _, setData := range sets {
@@ -48,4 +50,24 @@ func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, ex
 	}
 
 	return record, nil
+}
+
+func (s *workoutService) GetDailyRecords(userID uint, day time.Time) ([]models.WorkoutRecord, error) {
+	records, err := s.repo.FindByUserAndDay(userID, day)
+	if err != nil {
+		return nil, fmt.Errorf("fetch daily records failed: %w", err)
+	}
+	return records, nil
+}
+
+func (s *workoutService) GetMonthRecordDays(userID uint, year int, month int) ([]time.Time, error) {
+	if month < 1 || month > 12 {
+		return nil, fmt.Errorf("invalid month: %d", month)
+	}
+
+	days, err := s.repo.FindRecordDaysInMonth(userID, year, month)
+	if err != nil {
+		return nil, fmt.Errorf("fetch month record days failed: %w", err)
+	}
+	return days, nil
 }

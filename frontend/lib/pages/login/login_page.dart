@@ -4,7 +4,7 @@ import 'package:frontend/widgets/unfocus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:frontend/pages/login/login_page_controller.dart';
-import 'package:frontend/providers/auth_provider.dart';
+import 'package:frontend/notifiers/auth_notifier.dart';
 
 class LoginPage extends HookConsumerWidget {
   const LoginPage({super.key});

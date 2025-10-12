@@ -6,7 +6,7 @@ import 'package:frontend/pages/profile/profile_page.dart';
 import 'package:frontend/pages/signup/signup_page.dart';
 import 'package:frontend/pages/trend/trend_page.dart';
 import 'package:frontend/pages/workout_record/workout_record_page.dart';
-import 'package:frontend/providers/auth_provider.dart';
+import 'package:frontend/notifiers/auth_notifier.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 

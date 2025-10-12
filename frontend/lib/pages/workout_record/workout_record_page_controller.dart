@@ -78,7 +78,7 @@ class WorkoutRecordController extends StateNotifier<WorkoutRecordState> {
   Future<void> submit({
     required double bodyWeight,
     required int exerciseId,
-    required String trainedAtIso,
+    required String trainedOn,
     VoidCallback? onSuccess,
   }) async {
     try {
@@ -96,7 +96,7 @@ class WorkoutRecordController extends StateNotifier<WorkoutRecordState> {
         'body_weight': bodyWeight,
         'exercise_id': exerciseId,
         'sets': setsPayload,
-        'trained_at': trainedAtIso,
+        'trained_on': trainedOn,
       };
       await createWorkoutRecord(body);
 

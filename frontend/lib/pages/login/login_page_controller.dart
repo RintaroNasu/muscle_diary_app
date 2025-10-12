@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:frontend/providers/auth_provider.dart';
+import 'package:frontend/notifiers/auth_notifier.dart';
 
 class LoginState {
   const LoginState({

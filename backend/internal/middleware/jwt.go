@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -15,7 +14,6 @@ func JWTMiddleware() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			// Authorizationヘッダーを取得
 			authHeader := c.Request().Header.Get("Authorization")
-			fmt.Println("authHeader", authHeader)
 			if authHeader == "" {
 				return c.JSON(http.StatusUnauthorized, map[string]string{
 					"error": "Authorization header is required",
@@ -73,7 +71,6 @@ func JWTMiddleware() echo.MiddlewareFunc {
 			}
 
 			userID, ok := claims["sub"].(float64)
-			fmt.Println("userID", userID)
 			if !ok {
 				return c.JSON(http.StatusUnauthorized, map[string]string{
 					"error": "Invalid user ID in token",

@@ -4,7 +4,7 @@ import 'package:frontend/widgets/unfocus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:frontend/pages/signup/signup_page_controller.dart';
-import 'package:frontend/providers/auth_provider.dart';
+import 'package:frontend/notifiers/auth_notifier.dart';
 
 class SignupPage extends HookConsumerWidget {
   const SignupPage({super.key});
