@@ -1,10 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:frontend/notifiers/auth_notifier.dart';
 import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 const _baseUrl = 'http://localhost:8080';
 
-Future<List<Map<String, dynamic>>> fetchDayRecords(DateTime date) async {
+Future<List<Map<String, dynamic>>> fetchDayRecords(
+  Ref ref,
+  DateTime date,
+) async {
   final token = await readStoredToken();
   if (token == null || token.isEmpty) {
     throw Exception('未ログインのため記録を取得できません（トークンなし）');
@@ -33,6 +38,7 @@ Future<List<Map<String, dynamic>>> fetchDayRecords(DateTime date) async {
   }
 
   if (res.statusCode == 401) {
+    await ref.read(authProvider.notifier).logout();
     throw Exception('認証エラー: ログインし直してください');
   }
   if (res.statusCode == 400) {

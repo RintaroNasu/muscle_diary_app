@@ -9,6 +9,7 @@ import 'package:frontend/pages/workout_record/workout_record_page.dart';
 import 'package:frontend/notifiers/auth_notifier.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'refresh_listenable.dart';
 
 enum Routes {
   home(path: '/', name: 'home'),
@@ -52,8 +53,11 @@ int _indexFor(String loc) {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final refresh = GoRouterRefreshStream(ref.read(authProvider.notifier).stream);
+
   return GoRouter(
     initialLocation: Routes.login.path,
+    refreshListenable: refresh,
     redirect: (context, state) {
       final authState = ref.read(authProvider);
       final isLoggedIn = authState.isLoggedIn;
