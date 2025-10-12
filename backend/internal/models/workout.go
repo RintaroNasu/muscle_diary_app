@@ -11,7 +11,7 @@ type WorkoutRecord struct {
 	UserID     uint
 	ExerciseID uint `gorm:"foreignKey:ExerciseID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	BodyWeight float64
-	TrainedOn  time.Time   `gorm:"type:date;not null;index"`
+	TrainedOn  time.Time    `gorm:"type:date;not null;index"`
 	Sets       []WorkoutSet `gorm:"constraint:OnDelete:CASCADE"`
 	Exercise   Exercise     `gorm:"foreignKey:ExerciseID"`
 }
