@@ -11,7 +11,7 @@ final dayRecordsProvider = FutureProvider.autoDispose<List<DayRecord>>((
   ref,
 ) async {
   final selectedDate = ref.watch(selectedDateProvider);
-  final records = await fetchDayRecords(selectedDate);
+  final records = await fetchDayRecords(ref, selectedDate);
   return records.map((json) => DayRecord.fromJson(json)).toList();
 });
 
