@@ -100,7 +100,6 @@ func (h *workoutHandler) GetWorkoutRecordsByDate(c echo.Context) error {
 
 	loc, _ := time.LoadLocation("Asia/Tokyo")
 	day, err := time.ParseInLocation("2006-01-02", dateStr, loc)
-	fmt.Println("day", day)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": fmt.Sprintf("invalid date format: %v", err),
