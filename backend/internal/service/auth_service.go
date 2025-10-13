@@ -10,13 +10,19 @@ import (
 	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type AuthService interface {
 	Signup(email, password string) (*models.User, string, error)
 	Login(email, password string) (*models.User, string, error)
-	// Login(email, password string) (string, error)
 }
+
+var (
+	ErrUserAlreadyExists  = errors.New("user already exists")
+	ErrUserNotFound       = errors.New("user not found")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+)
 
 func NewAuthService(repo repository.UserRepository) AuthService {
 	return &authService{repo: repo}
@@ -27,8 +33,12 @@ type authService struct {
 }
 
 func (s *authService) Signup(email, password string) (*models.User, string, error) {
-	if _, err := s.repo.FindByEmail(email); err == nil {
-		return nil, "", errors.New("email already in use")
+	_, err := s.repo.FindByEmail(email)
+	if err == nil {
+		return nil, "", ErrUserAlreadyExists
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, "", fmt.Errorf("find user failed: %w", err)
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -51,11 +61,14 @@ func (s *authService) Signup(email, password string) (*models.User, string, erro
 func (s *authService) Login(email, password string) (*models.User, string, error) {
 	u, err := s.repo.FindByEmail(email)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, "", ErrUserNotFound
+		}
 		return nil, "", fmt.Errorf("find user failed: %w", err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
-		return nil, "", fmt.Errorf("password compare failed: %w", err)
+		return nil, "", ErrInvalidCredentials
 	}
 
 	token, err := generateJWT(u.ID)
