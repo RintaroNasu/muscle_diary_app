@@ -16,7 +16,6 @@ import (
 type AuthService interface {
 	Signup(email, password string) (*models.User, string, error)
 	Login(email, password string) (*models.User, string, error)
-	// Login(email, password string) (string, error)
 }
 
 var (

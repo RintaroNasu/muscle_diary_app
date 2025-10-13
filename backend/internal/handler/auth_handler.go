@@ -55,7 +55,7 @@ func (h *authHandler) SignUp(c echo.Context) error {
 		if errors.Is(err, service.ErrUserAlreadyExists) {
 			return httpx.Conflict("UserAlreadyExists", "すでに登録されています", err)
 		}
-		return httpx.Internal("ユーザー登録に失敗しました", err)
+		return httpx.Internal("システムエラーが発生しました", err)
 	}
 
 	slog.InfoContext(ctx, "auth_signup_success", "user_id", u.ID)
@@ -94,7 +94,7 @@ func (h *authHandler) Login(c echo.Context) error {
 			errors.Is(err, service.ErrInvalidCredentials):
 			return httpx.Unauthorized("認証に失敗しました", err)
 		default:
-			return httpx.Internal("ログインに失敗しました", err)
+			return httpx.Internal("システムエラーが発生しました", err)
 		}
 	}
 
