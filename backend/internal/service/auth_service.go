@@ -18,6 +18,10 @@ type AuthService interface {
 	Login(email, password string) (*models.User, string, error)
 }
 
+type authService struct {
+	repo repository.UserRepository
+}
+
 var (
 	ErrUserAlreadyExists  = errors.New("user already exists")
 	ErrUserNotFound       = errors.New("user not found")
@@ -26,10 +30,6 @@ var (
 
 func NewAuthService(repo repository.UserRepository) AuthService {
 	return &authService{repo: repo}
-}
-
-type authService struct {
-	repo repository.UserRepository
 }
 
 func (s *authService) Signup(email, password string) (*models.User, string, error) {
