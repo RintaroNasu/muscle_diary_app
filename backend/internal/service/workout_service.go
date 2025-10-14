@@ -1,11 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
+	"gorm.io/gorm"
 )
 
 type WorkoutService interface {
@@ -20,15 +23,31 @@ type WorkoutSetData struct {
 	ExerciseWeight float64
 }
 
-func NewWorkoutService(repo repository.WorkoutRepository) WorkoutService {
-	return &workoutService{repo: repo}
-}
-
 type workoutService struct {
 	repo repository.WorkoutRepository
 }
 
+var (
+	ErrNoSets           = errors.New("no sets")
+	ErrInvalidSetValue  = errors.New("invalid set value")
+	ErrExerciseNotFound = errors.New("exercise not found")
+)
+
+func NewWorkoutService(repo repository.WorkoutRepository) WorkoutService {
+	return &workoutService{repo: repo}
+}
+
 func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error) {
+	if len(sets) == 0 {
+		return nil, ErrNoSets
+	}
+
+	for _, st := range sets {
+		if st.SetNo <= 0 || st.Reps <= 0 || st.ExerciseWeight < 0 {
+			return nil, ErrInvalidSetValue
+		}
+	}
+
 	record := &models.WorkoutRecord{
 		UserID:     userID,
 		ExerciseID: exerciseID,
@@ -46,7 +65,10 @@ func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, ex
 	}
 
 	if err := s.repo.Create(record); err != nil {
-		return nil, fmt.Errorf("create workout record failed: %w", err)
+		if errors.Is(err, gorm.ErrForeignKeyViolated) || strings.Contains(err.Error(), "foreign key") {
+			return nil, ErrExerciseNotFound
+	}
+	return nil, fmt.Errorf("create workout record failed: %w", err)
 	}
 
 	return record, nil

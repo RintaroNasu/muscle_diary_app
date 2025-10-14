@@ -1,11 +1,13 @@
 package handler
 
 import (
-	"fmt"
+	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/RintaroNasu/muscle_diary_app/internal/httpx"
 	"github.com/RintaroNasu/muscle_diary_app/internal/middleware"
 	"github.com/RintaroNasu/muscle_diary_app/internal/service"
 	"github.com/labstack/echo/v4"
@@ -21,10 +23,6 @@ type workoutHandler struct {
 	svc service.WorkoutService
 }
 
-func NewWorkoutHandler(svc service.WorkoutService) WorkoutHandler {
-	return &workoutHandler{svc: svc}
-}
-
 type CreateWorkoutRecordRequest struct {
 	BodyWeight float64             `json:"body_weight"`
 	ExerciseID uint                `json:"exercise_id"`
@@ -36,42 +34,6 @@ type WorkoutSetRequest struct {
 	Set            int     `json:"set"`
 	Reps           int     `json:"reps"`
 	ExerciseWeight float64 `json:"exercise_weight"`
-}
-
-func (h *workoutHandler) CreateWorkoutRecord(c echo.Context) error {
-	var req CreateWorkoutRecordRequest
-	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": fmt.Sprintf("invalid request body: %v", err),
-		})
-	}
-	userID := middleware.GetUserID(c)
-
-	trainedOn, err := time.Parse("2006-01-02", req.TrainedOn)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": fmt.Sprintf("invalid date format: %v", err),
-		})
-	}
-
-	var sets []service.WorkoutSetData
-	for _, setReq := range req.Sets {
-		sets = append(sets, service.WorkoutSetData{
-			SetNo:          setReq.Set,
-			Reps:           setReq.Reps,
-			ExerciseWeight: setReq.ExerciseWeight,
-		})
-	}
-
-	record, err := h.svc.CreateWorkoutRecord(userID, req.BodyWeight, req.ExerciseID, trainedOn, sets)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-	}
-
-	return c.JSON(http.StatusCreated, map[string]interface{}{
-		"message":   "Workout record created successfully",
-		"record_id": record.ID,
-	})
 }
 
 type workoutSetDTO struct {
@@ -88,30 +50,81 @@ type workoutRecordDTO struct {
 	Sets         []workoutSetDTO `json:"sets"`
 }
 
+func NewWorkoutHandler(svc service.WorkoutService) WorkoutHandler {
+	return &workoutHandler{svc: svc}
+}
+
+func (h *workoutHandler) CreateWorkoutRecord(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req CreateWorkoutRecordRequest
+
+	if err := c.Bind(&req); err != nil {
+		return httpx.BadRequest("InvalidBody", "リクエストの形式が不正です", err)
+	}
+	userID := middleware.GetUserID(c)
+
+	trainedOn, err := time.Parse("2006-01-02", req.TrainedOn)
+	if err != nil {
+		return httpx.BadRequest("InvalidDate", "日付の形式が不正です", err)
+	}
+
+	var sets []service.WorkoutSetData
+	for _, setReq := range req.Sets {
+		sets = append(sets, service.WorkoutSetData{
+			SetNo:          setReq.Set,
+			Reps:           setReq.Reps,
+			ExerciseWeight: setReq.ExerciseWeight,
+		})
+	}
+
+	record, err := h.svc.CreateWorkoutRecord(userID, req.BodyWeight, req.ExerciseID, trainedOn, sets)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrNoSets),
+			errors.Is(err, service.ErrInvalidSetValue):
+			return httpx.BadRequest("ValidationError", "セット内容が不正です", err)
+		case errors.Is(err, service.ErrExerciseNotFound):
+			return httpx.NotFound("ExerciseNotFound", "指定の種目が見つかりません", err)
+		default:
+			return httpx.Internal("システムエラーが発生しました", err)
+		}
+	}
+
+	slog.InfoContext(ctx, "workout_created",
+		"record_id", record.ID,
+		"exercise_id", req.ExerciseID,
+	)
+
+	return c.JSON(http.StatusCreated, map[string]interface{}{
+		"message":   "Workout record created successfully",
+		"record_id": record.ID,
+	})
+}
+
 func (h *workoutHandler) GetWorkoutRecordsByDate(c echo.Context) error {
+	ctx := c.Request().Context()
 	userID := middleware.GetUserID(c)
 
 	dateStr := c.QueryParam("date")
 	if dateStr == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "date parameter is required (format: YYYY-MM-DD)",
-		})
+		return httpx.BadRequest("InvalidQuery", "date は必須です（YYYY-MM-DD）", nil)
 	}
 
 	loc, _ := time.LoadLocation("Asia/Tokyo")
 	day, err := time.ParseInLocation("2006-01-02", dateStr, loc)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": fmt.Sprintf("invalid date format: %v", err),
-		})
+		return httpx.BadRequest("InvalidDate", "date の形式が不正です（YYYY-MM-DD）", err)
 	}
 
 	records, err := h.svc.GetDailyRecords(userID, day)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": fmt.Sprintf("failed to get workout records: %v", err),
-		})
+		return httpx.Internal("システムエラーが発生しました", err)
 	}
+
+	slog.InfoContext(ctx, "workout_daily_fetched",
+		"date", day.Format("2006-01-02"),
+		"count", len(records),
+	)
 
 	out := make([]workoutRecordDTO, 0, len(records))
 	for _, r := range records {
@@ -140,32 +153,35 @@ func (h *workoutHandler) GetWorkoutRecordsByDate(c echo.Context) error {
 }
 
 func (h *workoutHandler) GetMonthRecordDays(c echo.Context) error {
+	ctx := c.Request().Context()
 	userID := middleware.GetUserID(c)
 
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
 	if yearStr == "" || monthStr == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "year and month are required (e.g. ?year=2025&month=10)",
-		})
+		return httpx.BadRequest("InvalidQuery", "year と month は必須です（例: ?year=2025&month=10）", nil)
 	}
 
 	year, err := strconv.Atoi(yearStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid year"})
+		return httpx.BadRequest("InvalidYear", "year の形式が不正です（整数）", err)
 	}
 
 	month, err := strconv.Atoi(monthStr)
 	if err != nil || month < 1 || month > 12 {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid month"})
+		return httpx.BadRequest("InvalidMonth", "month は 1〜12 の整数です", err)
 	}
 
 	days, err := h.svc.GetMonthRecordDays(userID, year, month)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": fmt.Sprintf("failed to get month record days: %v", err),
-		})
+		return httpx.Internal("システムエラーが発生しました", err)
 	}
+
+	slog.InfoContext(ctx, "workout_month_days_fetched",
+		"year", year,
+		"month", month,
+		"count", len(days),
+	)
 
 	out := make([]string, 0, len(days))
 	for _, d := range days {
