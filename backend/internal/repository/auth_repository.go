@@ -12,12 +12,12 @@ type UserRepository interface {
 	FindByEmail(email string) (*models.User, error)
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
-	return &userRepository{db: db}
-}
-
 type userRepository struct {
 	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &userRepository{db: db}
 }
 
 func (r *userRepository) Create(u *models.User) error {
