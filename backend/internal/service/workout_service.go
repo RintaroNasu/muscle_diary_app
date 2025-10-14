@@ -67,8 +67,8 @@ func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, ex
 	if err := s.repo.Create(record); err != nil {
 		if errors.Is(err, gorm.ErrForeignKeyViolated) || strings.Contains(err.Error(), "foreign key") {
 			return nil, ErrExerciseNotFound
-	}
-	return nil, fmt.Errorf("create workout record failed: %w", err)
+		}
+		return nil, fmt.Errorf("create workout record failed: %w", err)
 	}
 
 	return record, nil
