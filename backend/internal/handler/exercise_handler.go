@@ -1,9 +1,10 @@
 package handler
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
 
+	"github.com/RintaroNasu/muscle_diary_app/internal/httpx"
 	"github.com/RintaroNasu/muscle_diary_app/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -21,11 +22,14 @@ func NewExerciseHandler(svc service.ExerciseService) ExerciseHandler {
 }
 
 func (h *exerciseHandler) List(c echo.Context) error {
+	ctx := c.Request().Context()
+
 	items, err := h.svc.List(c.Request().Context())
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": fmt.Sprintf("failed to fetch exercises: %v", err),
-		})
+		return httpx.Internal("システムエラーが発生しました", err)
 	}
+
+	slog.InfoContext(ctx, "exercise_list_fetched", "count", len(items))
+
 	return c.JSON(http.StatusOK, items)
 }
