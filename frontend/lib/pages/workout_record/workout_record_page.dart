@@ -104,7 +104,6 @@ class WorkoutRecordPage extends HookConsumerWidget {
                           final f = formKey.currentState;
                           if (f == null || !f.validate()) return;
                           if (selectedExercise.value == null) return;
-                          print(dateController.text);
                           await pageCtl.submit(
                             bodyWeight: double.parse(
                               weightController.text.trim(),

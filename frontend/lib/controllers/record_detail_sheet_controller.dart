@@ -70,7 +70,6 @@ class RecordDetailSheetController
         'trained_on': trainedOn,
         'sets': setsPayload,
       };
-      print(body);
       await updateWorkoutRecord(recordId, body);
 
       state = state.copyWith(isSubmitting: false, successMessage: '記録を更新しました');
@@ -90,7 +89,6 @@ class RecordDetailSheetController
         errorMessage: null,
         successMessage: null,
       );
-      print(recordId);
       await deleteWorkoutRecord(recordId);
 
       state = state.copyWith(isDeleting: false, successMessage: '記録を削除しました');
