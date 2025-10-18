@@ -3,8 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:frontend/widgets/unfocus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:frontend/pages/login/login_page_controller.dart';
-import 'package:frontend/notifiers/auth_notifier.dart';
+import 'package:frontend/controllers/login_page_controller.dart';
+import 'package:frontend/controllers/common/auth_controller.dart';
 
 class LoginPage extends HookConsumerWidget {
   const LoginPage({super.key});

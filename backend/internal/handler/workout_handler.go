@@ -17,6 +17,8 @@ type WorkoutHandler interface {
 	CreateWorkoutRecord(c echo.Context) error
 	GetWorkoutRecordsByDate(c echo.Context) error
 	GetMonthRecordDays(c echo.Context) error
+	UpdateWorkoutRecord(c echo.Context) error
+	DeleteWorkoutRecord(c echo.Context) error
 }
 
 type workoutHandler struct {
@@ -188,4 +190,88 @@ func (h *workoutHandler) GetMonthRecordDays(c echo.Context) error {
 		out = append(out, d.Format("2006-01-02"))
 	}
 	return c.JSON(http.StatusOK, out)
+}
+
+func (h *workoutHandler) UpdateWorkoutRecord(c echo.Context) error {
+	ctx := c.Request().Context()
+	userID := middleware.GetUserID(c)
+
+	recordIDStr := c.Param("id")
+	recordID, err := strconv.ParseUint(recordIDStr, 10, 32)
+	if err != nil {
+		return httpx.BadRequest("InvalidID", "レコードIDが不正です", err)
+	}
+
+	var req CreateWorkoutRecordRequest
+	if err := c.Bind(&req); err != nil {
+		return httpx.BadRequest("InvalidBody", "リクエストの形式が不正です", err)
+	}
+
+	trainedOn, err := time.Parse("2006-01-02", req.TrainedOn)
+	if err != nil {
+		return httpx.BadRequest("InvalidDate", "日付の形式が不正です", err)
+	}
+
+	var sets []service.WorkoutSetData
+	for _, setReq := range req.Sets {
+		sets = append(sets, service.WorkoutSetData{
+			SetNo:          setReq.Set,
+			Reps:           setReq.Reps,
+			ExerciseWeight: setReq.ExerciseWeight,
+		})
+	}
+
+	record, err := h.svc.UpdateWorkoutRecord(userID, uint(recordID), req.BodyWeight, req.ExerciseID, trainedOn, sets)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrNoSets),
+			errors.Is(err, service.ErrInvalidSetValue):
+			return httpx.BadRequest("ValidationError", "セット内容が不正です", err)
+		case errors.Is(err, service.ErrExerciseNotFound):
+			return httpx.NotFound("ExerciseNotFound", "指定の種目が見つかりません", err)
+		case errors.Is(err, service.ErrRecordNotFound):
+			return httpx.NotFound("RecordNotFound", "指定の記録が見つかりません", err)
+		default:
+			return httpx.Internal("システムエラーが発生しました", err)
+		}
+	}
+
+	slog.InfoContext(ctx, "workout_updated",
+		"record_id", record.ID,
+		"exercise_id", req.ExerciseID,
+	)
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message":   "Workout record updated successfully",
+		"record_id": record.ID,
+	})
+}
+
+func (h *workoutHandler) DeleteWorkoutRecord(c echo.Context) error {
+	ctx := c.Request().Context()
+	userID := middleware.GetUserID(c)
+
+	recordIDStr := c.Param("id")
+	recordID, err := strconv.ParseUint(recordIDStr, 10, 32)
+	if err != nil {
+		return httpx.BadRequest("InvalidID", "レコードIDが不正です", err)
+	}
+
+	err = h.svc.DeleteWorkoutRecord(userID, uint(recordID))
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrRecordNotFound):
+			return httpx.NotFound("RecordNotFound", "指定の記録が見つかりません", err)
+		default:
+			return httpx.Internal("システムエラーが発生しました", err)
+		}
+	}
+
+	slog.InfoContext(ctx, "workout_deleted",
+		"record_id", recordID,
+	)
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "Workout record deleted successfully",
+	})
 }

@@ -1,8 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:frontend/notifiers/auth_notifier.dart';
+import 'package:frontend/controllers/common/auth_controller.dart';
 
-class SignupState {
-  const SignupState({
+class LoginState {
+  const LoginState({
     this.isLoading = false,
     this.errorMessage,
     this.successMessage,
@@ -12,12 +12,12 @@ class SignupState {
   final String? errorMessage;
   final String? successMessage;
 
-  SignupState copyWith({
+  LoginState copyWith({
     bool? isLoading,
     String? errorMessage,
     String? successMessage,
   }) {
-    return SignupState(
+    return LoginState(
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       successMessage: successMessage,
@@ -25,13 +25,13 @@ class SignupState {
   }
 }
 
-final signupControllerProvider =
-    StateNotifierProvider<SignupController, SignupState>(
-      (ref) => SignupController(ref),
+final loginControllerProvider =
+    StateNotifierProvider<LoginController, LoginState>(
+      (ref) => LoginController(ref),
     );
 
-class SignupController extends StateNotifier<SignupState> {
-  SignupController(this.ref) : super(const SignupState());
+class LoginController extends StateNotifier<LoginState> {
+  LoginController(this.ref) : super(const LoginState());
 
   final Ref ref;
 
@@ -41,17 +41,17 @@ class SignupController extends StateNotifier<SignupState> {
     return regex.hasMatch(trimmedEmail);
   }
 
-  Future<void> signup(String email, String password) async {
+  Future<void> login(String email, String password) async {
     state = state.copyWith(
       isLoading: true,
       errorMessage: null,
       successMessage: null,
     );
-
-    await ref.read(authProvider.notifier).signup(email, password);
+    await ref.read(authProvider.notifier).login(email, password);
     final auth = ref.read(authProvider);
+
     if (auth.isLoggedIn) {
-      state = state.copyWith(isLoading: false, successMessage: 'サインアップが完了しました');
+      state = state.copyWith(isLoading: false, successMessage: 'ログインが完了しました');
     } else {
       state = state.copyWith(isLoading: false);
     }

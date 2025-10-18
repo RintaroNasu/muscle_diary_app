@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:frontend/controllers/common/exercises_provider.dart';
+import 'package:frontend/controllers/common/record_form_controller.dart';
 import 'package:frontend/models/exercise.dart';
+import 'package:frontend/utils/data_picker.dart';
+import 'package:frontend/widgets/record/record_form.dart';
+import 'package:frontend/widgets/unfocus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
-import 'package:frontend/pages/workout_record/workout_record_page_controller.dart';
-import 'package:frontend/repositories/api/exercise_records.dart';
-
-final _dateFmt = DateFormat('yyyy-MM-dd');
+import 'package:frontend/controllers/workout_record_page_controller.dart';
 
 class WorkoutRecordPage extends HookConsumerWidget {
   const WorkoutRecordPage({super.key});
@@ -17,42 +18,41 @@ class WorkoutRecordPage extends HookConsumerWidget {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final weightController = useTextEditingController();
     final dateController = useTextEditingController();
-    final selectedExercise = useState<Exercise?>(null);
-    final exercises = useState<List<Exercise>>([]);
-    final isLoadingExercises = useState<bool>(true);
 
-    final state = ref.watch(workoutRecordControllerProvider);
-    final controller = ref.read(workoutRecordControllerProvider.notifier);
+    final selectedExercise = useState<Exercise?>(null);
+
+    final formState = ref.watch(recordFormControllerProvider('create'));
+    final formCtl = ref.read(recordFormControllerProvider('create').notifier);
+    final pageState = ref.watch(workoutRecordPageControllerProvider);
+    final pageCtl = ref.read(workoutRecordPageControllerProvider.notifier);
+    final exercises = ref.watch(exercisesProvider);
 
     useListenable(weightController);
     useListenable(dateController);
 
-    useEffect(() {
-      Future<void> loadExercises() async {
-        try {
-          final exerciseList = await getExercises();
-          exercises.value = exerciseList
-              .map((e) => Exercise.fromJson(e))
-              .toList();
-          isLoadingExercises.value = false;
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('種目の取得に失敗しました: $e'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-          isLoadingExercises.value = false;
-        }
-      }
+    ref.listen(exercisesProvider, (prev, next) {
+      next.when(
+        data: (_) {},
+        loading: () {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('種目を読み込み中です…')));
+          });
+        },
+        error: (error, _) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('種目の取得に失敗しました: $error')));
+          });
+        },
+      );
+    });
 
-      loadExercises();
-      return null;
-    }, []);
-
-    ref.listen(workoutRecordControllerProvider, (prev, next) {
+    ref.listen(workoutRecordPageControllerProvider, (prev, next) {
       if (!context.mounted) return;
       if (prev?.successMessage != next.successMessage &&
           next.successMessage != null) {
@@ -71,139 +71,40 @@ class WorkoutRecordPage extends HookConsumerWidget {
       }
     });
 
-    String? required(String? v) =>
-        (v == null || v.trim().isEmpty) ? '必須項目です' : null;
-
-    String? requiredDouble(String? v) {
-      final t = v?.trim() ?? '';
-      if (t.isEmpty) return '必須項目です';
-      final n = double.tryParse(t);
-      if (n == null) return '数値を入力してください';
-      if (n <= 0) return '0より大きい値を入力してください';
-      return null;
-    }
-
-    String? requiredInt(String? v) {
-      final t = v?.trim() ?? '';
-      if (t.isEmpty) return '必須項目です';
-      final n = int.tryParse(t);
-      if (n == null) return '整数を入力してください';
-      if (n <= 0) return '0より大きい整数を入力してください';
-      return null;
-    }
-
-    Future<void> pickDate() async {
-      final now = DateTime.now();
-      final picked = await showDatePicker(
-        context: context,
-        initialDate: now,
-        firstDate: DateTime(now.year - 5),
-        lastDate: DateTime(now.year + 5),
-      );
-      if (picked != null) {
-        dateController.text = _dateFmt.format(picked);
-      }
-    }
-
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(30),
-          child: Form(
-            key: formKey,
+    return UnFocus(
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(30),
             child: Column(
               children: [
-                TextFormField(
-                  controller: weightController,
-                  decoration: const InputDecoration(labelText: '体重(kg)'),
-                  validator: requiredDouble,
-                ),
-                const SizedBox(height: 24),
-                DropdownButtonFormField<Exercise>(
-                  value: selectedExercise.value,
-                  items: exercises.value
-                      .map(
-                        (e) => DropdownMenuItem(value: e, child: Text(e.name)),
-                      )
-                      .toList(),
-                  onChanged: (v) => selectedExercise.value = v,
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: dateController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: '実施日',
-                    hintText: 'タップして日付を選択',
-                    suffixIcon: Icon(Icons.calendar_today),
+                RecordForm(
+                  formKey: formKey,
+                  weightController: weightController,
+                  dateController: dateController,
+                  selectedExercise: selectedExercise.value,
+                  exercises: exercises.maybeWhen(
+                    data: (data) => data,
+                    orElse: () => [],
                   ),
-                  onTap: pickDate,
-                  validator: required,
+                  onSelectExercise: (v) => selectedExercise.value = v,
+                  onPickDate: () async {
+                    final ymd = await pickDateAsYmd(context);
+                    if (ymd != null) dateController.text = ymd;
+                  },
+                  sets: formState.sets,
+                  onAddSet: formCtl.addSet,
+                  onRemoveSet: formCtl.removeSet,
+                  isSubmitting: pageState.isSubmitting,
                 ),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    const Text(
-                      'セット',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: state.isSubmitting ? null : controller.addSet,
-                      icon: const Icon(Icons.add),
-                      tooltip: 'セットを追加',
-                    ),
-                  ],
-                ),
-                for (int i = 0; i < state.sets.length; i++) ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: TextFormField(
-                          controller: state.sets[i].weight,
-                          decoration: const InputDecoration(
-                            labelText: '重量(kg)',
-                          ),
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          validator: requiredDouble,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextFormField(
-                          controller: state.sets[i].reps,
-                          decoration: const InputDecoration(labelText: '回数'),
-                          keyboardType: TextInputType.number,
-                          validator: requiredInt,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: state.isSubmitting
-                            ? null
-                            : () => controller.removeSet(i),
-                        icon: const Icon(Icons.delete_outline),
-                        tooltip: 'このセットを削除',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: state.isSubmitting
+                  onPressed: pageState.isSubmitting
                       ? null
                       : () async {
                           final f = formKey.currentState;
                           if (f == null || !f.validate()) return;
                           if (selectedExercise.value == null) return;
-
-                          await controller.submit(
+                          await pageCtl.submit(
                             bodyWeight: double.parse(
                               weightController.text.trim(),
                             ),
@@ -214,7 +115,7 @@ class WorkoutRecordPage extends HookConsumerWidget {
                             },
                           );
                         },
-                  child: state.isSubmitting
+                  child: pageState.isSubmitting
                       ? const SizedBox(
                           width: 20,
                           height: 20,

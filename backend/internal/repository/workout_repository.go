@@ -11,6 +11,9 @@ type WorkoutRepository interface {
 	Create(record *models.WorkoutRecord) error
 	FindByUserAndDay(userID uint, day time.Time) ([]models.WorkoutRecord, error)
 	FindRecordDaysInMonth(userID uint, year int, month int) ([]time.Time, error)
+	FindByIDAndUserID(id uint, userID uint) (*models.WorkoutRecord, error)
+	Update(record *models.WorkoutRecord) error
+	Delete(id uint, userID uint) error
 }
 
 type workoutRepository struct {
@@ -51,4 +54,54 @@ func (r *workoutRepository) FindRecordDaysInMonth(userID uint, year int, month i
 		return nil, err
 	}
 	return dates, nil
+}
+
+func (r *workoutRepository) FindByIDAndUserID(id uint, userID uint) (*models.WorkoutRecord, error) {
+	var record models.WorkoutRecord
+	err := r.db.
+		Preload("Sets").
+		Preload("Exercise").
+		Where("id = ? AND user_id = ?", id, userID).
+		First(&record).Error
+	if err != nil {
+		return nil, err
+	}
+	return &record, nil
+}
+
+func (r *workoutRepository) Update(record *models.WorkoutRecord) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Unscoped().
+			Where("workout_record_id = ?", record.ID).
+			Delete(&models.WorkoutSet{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.
+			Omit("Sets.*").
+			Model(&models.WorkoutRecord{}).
+			Where("id = ?", record.ID).
+			Updates(map[string]any{
+				"body_weight": record.BodyWeight,
+				"exercise_id": record.ExerciseID,
+				"trained_on":  record.TrainedOn,
+			}).Error; err != nil {
+			return err
+		}
+
+		for i := range record.Sets {
+			record.Sets[i].ID = 0
+			record.Sets[i].WorkoutRecordID = record.ID
+		}
+		if len(record.Sets) > 0 {
+			if err := tx.Create(&record.Sets).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+func (r *workoutRepository) Delete(id uint, userID uint) error {
+	return r.db.Where("id = ? AND user_id = ?", id, userID).Unscoped().Delete(&models.WorkoutRecord{}).Error
 }

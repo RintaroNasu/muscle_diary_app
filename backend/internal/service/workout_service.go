@@ -15,6 +15,8 @@ type WorkoutService interface {
 	CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
 	GetDailyRecords(userID uint, day time.Time) ([]models.WorkoutRecord, error)
 	GetMonthRecordDays(userID uint, year int, month int) ([]time.Time, error)
+	UpdateWorkoutRecord(userID uint, recordID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
+	DeleteWorkoutRecord(userID uint, recordID uint) error
 }
 
 type WorkoutSetData struct {
@@ -31,6 +33,7 @@ var (
 	ErrNoSets           = errors.New("no sets")
 	ErrInvalidSetValue  = errors.New("invalid set value")
 	ErrExerciseNotFound = errors.New("exercise not found")
+	ErrRecordNotFound   = errors.New("record not found")
 )
 
 func NewWorkoutService(repo repository.WorkoutRepository) WorkoutService {
@@ -92,4 +95,63 @@ func (s *workoutService) GetMonthRecordDays(userID uint, year int, month int) ([
 		return nil, fmt.Errorf("fetch month record days failed: %w", err)
 	}
 	return days, nil
+}
+
+func (s *workoutService) UpdateWorkoutRecord(userID uint, recordID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error) {
+	if len(sets) == 0 {
+		return nil, ErrNoSets
+	}
+
+	for _, st := range sets {
+		if st.SetNo <= 0 || st.Reps <= 0 || st.ExerciseWeight < 0 {
+			return nil, ErrInvalidSetValue
+		}
+	}
+
+	existingRecord, err := s.repo.FindByIDAndUserID(recordID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, fmt.Errorf("find workout record failed: %w", err)
+	}
+
+	existingRecord.BodyWeight = bodyWeight
+	existingRecord.ExerciseID = exerciseID
+	existingRecord.TrainedOn = trainedOn
+
+	existingRecord.Sets = make([]models.WorkoutSet, 0, len(sets))
+	for _, setData := range sets {
+		set := models.WorkoutSet{
+			SetNo:          setData.SetNo,
+			Reps:           setData.Reps,
+			ExerciseWeight: setData.ExerciseWeight,
+		}
+		existingRecord.Sets = append(existingRecord.Sets, set)
+	}
+
+	if err := s.repo.Update(existingRecord); err != nil {
+		if errors.Is(err, gorm.ErrForeignKeyViolated) || strings.Contains(err.Error(), "foreign key") {
+			return nil, ErrExerciseNotFound
+		}
+		return nil, fmt.Errorf("update workout record failed: %w", err)
+	}
+
+	return existingRecord, nil
+}
+
+func (s *workoutService) DeleteWorkoutRecord(userID uint, recordID uint) error {
+	_, err := s.repo.FindByIDAndUserID(recordID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrRecordNotFound
+		}
+		return fmt.Errorf("find workout record failed: %w", err)
+	}
+
+	if err := s.repo.Delete(recordID, userID); err != nil {
+		return fmt.Errorf("delete workout record failed: %w", err)
+	}
+
+	return nil
 }
