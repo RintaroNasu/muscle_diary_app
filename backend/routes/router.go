@@ -36,4 +36,6 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	authRequired.POST("/training_records", workoutHandler.CreateWorkoutRecord)
 	authRequired.GET("/training_records/date", workoutHandler.GetWorkoutRecordsByDate)
 	authRequired.GET("/training_records/monthly_days", workoutHandler.GetMonthRecordDays)
+	authRequired.PUT("/training_records/:id", workoutHandler.UpdateWorkoutRecord)
+	authRequired.DELETE("/training_records/:id", workoutHandler.DeleteWorkoutRecord)
 }
