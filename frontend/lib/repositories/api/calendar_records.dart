@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:frontend/notifiers/auth_notifier.dart';
+import 'package:frontend/controllers/common/auth_controller.dart';
 import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
