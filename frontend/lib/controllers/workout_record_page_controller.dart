@@ -27,15 +27,14 @@ class WorkoutRecordPageState {
   }
 }
 
-final workoutRecordPageControllerProvider = StateNotifierProvider<
-    WorkoutRecordPageController, WorkoutRecordPageState>(
-  (ref) => WorkoutRecordPageController(ref),
-);
+final workoutRecordPageControllerProvider =
+    StateNotifierProvider<WorkoutRecordPageController, WorkoutRecordPageState>(
+      (ref) => WorkoutRecordPageController(ref),
+    );
 
 class WorkoutRecordPageController
     extends StateNotifier<WorkoutRecordPageState> {
-  WorkoutRecordPageController(this.ref)
-      : super(const WorkoutRecordPageState());
+  WorkoutRecordPageController(this.ref) : super(const WorkoutRecordPageState());
 
   final Ref ref;
 
@@ -52,8 +51,9 @@ class WorkoutRecordPageController
         successMessage: null,
       );
 
-      final setsPayload =
-          ref.read(recordFormControllerProvider('create').notifier).buildSetsPayload();
+      final setsPayload = ref
+          .read(recordFormControllerProvider('create').notifier)
+          .buildSetsPayload();
 
       final body = {
         'body_weight': bodyWeight,
@@ -63,16 +63,10 @@ class WorkoutRecordPageController
       };
       await createWorkoutRecord(body);
 
-      state = state.copyWith(
-        isSubmitting: false,
-        successMessage: '記録を保存しました',
-      );
+      state = state.copyWith(isSubmitting: false, successMessage: '記録を保存しました');
       onSuccess?.call();
     } catch (e) {
-      state = state.copyWith(
-        isSubmitting: false,
-        errorMessage: '保存に失敗: $e',
-      );
+      state = state.copyWith(isSubmitting: false, errorMessage: '保存に失敗: $e');
     }
   }
 }

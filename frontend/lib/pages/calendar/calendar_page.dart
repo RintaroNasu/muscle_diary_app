@@ -44,7 +44,9 @@ class CalendarPage extends HookConsumerWidget {
                       focusedDay: selectedDate,
                       selectedDayPredicate: (d) => isSameDay(d, selectedDate),
                       onDaySelected: (selected, focused) {
-                        ref.read(selectedDateProvider.notifier).state = DateTime(
+                        ref
+                            .read(selectedDateProvider.notifier)
+                            .state = DateTime(
                           selected.year,
                           selected.month,
                           selected.day,
@@ -136,7 +138,9 @@ class CalendarPage extends HookConsumerWidget {
                               loading: () {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('種目を読み込み中です…')),
+                                    const SnackBar(
+                                      content: Text('種目を読み込み中です…'),
+                                    ),
                                   );
                                 }
                               },
