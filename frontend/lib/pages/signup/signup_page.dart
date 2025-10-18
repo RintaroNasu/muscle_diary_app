@@ -3,8 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:frontend/widgets/unfocus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:frontend/pages/signup/signup_page_controller.dart';
-import 'package:frontend/notifiers/auth_notifier.dart';
+import 'package:frontend/controllers/signup_page_controller.dart';
+import 'package:frontend/controllers/common/auth_controller.dart';
 
 class SignupPage extends HookConsumerWidget {
   const SignupPage({super.key});
