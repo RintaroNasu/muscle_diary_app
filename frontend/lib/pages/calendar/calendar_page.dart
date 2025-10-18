@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/controllers/common/exercises_provider.dart';
-import 'package:frontend/pages/calendar/%20record_detail_sheet.dart';
+import 'package:frontend/pages/calendar/record_detail_sheet.dart';
 import 'package:frontend/widgets/unfocus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../controllers/calendar_page_controller.dart';
