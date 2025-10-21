@@ -14,10 +14,20 @@ type WorkoutRepository interface {
 	FindByIDAndUserID(id uint, userID uint) (*models.WorkoutRecord, error)
 	Update(record *models.WorkoutRecord) error
 	Delete(id uint, userID uint) error
+	FindSetsByUserAndExercise(userID uint, exerciseID uint) ([]FlatWorkoutSet, error)
 }
 
 type workoutRepository struct {
 	db *gorm.DB
+}
+
+type FlatWorkoutSet struct {
+	RecordID       uint      `json:"record_id"`
+	TrainedOn      time.Time `json:"trained_on"`
+	SetNo          int       `json:"set"`
+	Reps           int       `json:"reps"`
+	ExerciseWeight float64   `json:"exercise_weight"`
+	BodyWeight     float64   `json:"body_weight"`
 }
 
 func NewWorkoutRepository(db *gorm.DB) WorkoutRepository {
@@ -104,4 +114,26 @@ func (r *workoutRepository) Update(record *models.WorkoutRecord) error {
 
 func (r *workoutRepository) Delete(id uint, userID uint) error {
 	return r.db.Where("id = ? AND user_id = ?", id, userID).Unscoped().Delete(&models.WorkoutRecord{}).Error
+}
+
+func (r *workoutRepository) FindSetsByUserAndExercise(userID uint, exerciseID uint) ([]FlatWorkoutSet, error) {
+	var rows []FlatWorkoutSet
+	err := r.db.
+		Table("workout_sets AS s").
+		Select(`
+			r.id AS record_id,
+			r.trained_on AS trained_on,
+			s.set_no AS set_no,
+			s.reps AS reps,
+			s.exercise_weight AS exercise_weight,
+			r.body_weight AS body_weight
+		`).
+		Joins("INNER JOIN workout_records r ON r.id = s.workout_record_id").
+		Where("r.user_id = ? AND r.exercise_id = ?", userID, exerciseID).
+		Order("r.trained_on ASC, s.set_no ASC").
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
 }
