@@ -19,6 +19,7 @@ type WorkoutHandler interface {
 	GetMonthRecordDays(c echo.Context) error
 	UpdateWorkoutRecord(c echo.Context) error
 	DeleteWorkoutRecord(c echo.Context) error
+	GetWorkoutRecordsByExercise(c echo.Context) error
 }
 
 type workoutHandler struct {
@@ -50,6 +51,15 @@ type workoutRecordDTO struct {
 	BodyWeight   float64         `json:"body_weight"`
 	TrainedOn    string          `json:"trained_on"`
 	Sets         []workoutSetDTO `json:"sets"`
+}
+
+type ExerciseSingleSetResponse struct {
+	RecordID       uint    `json:"record_id"`
+	TrainedOn      string  `json:"trained_on"`
+	Set            int     `json:"set"`
+	Reps           int     `json:"reps"`
+	ExerciseWeight float64 `json:"exercise_weight"`
+	BodyWeight     float64 `json:"body_weight"`
 }
 
 func NewWorkoutHandler(svc service.WorkoutService) WorkoutHandler {
@@ -274,4 +284,43 @@ func (h *workoutHandler) DeleteWorkoutRecord(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "Workout record deleted successfully",
 	})
+}
+
+func (h *workoutHandler) GetWorkoutRecordsByExercise(c echo.Context) error {
+	ctx := c.Request().Context()
+	userID := middleware.GetUserID(c)
+	exerciseIDStr := c.Param("exerciseId")
+	if exerciseIDStr == "" {
+		return httpx.BadRequest("MissingExerciseID", "種目IDが指定されていません", nil)
+	}
+
+	eid, err := strconv.ParseUint(exerciseIDStr, 10, 32)
+	if err != nil {
+		return httpx.BadRequest("InvalidExerciseID", "種目IDが不正です", err)
+	}
+
+	rows, err := h.svc.GetWorkoutRecordsByExercise(userID, uint(eid))
+	if err != nil {
+		return httpx.Internal("システムエラーが発生しました", err)
+	}
+
+	loc, _ := time.LoadLocation("Asia/Tokyo")
+	out := make([]ExerciseSingleSetResponse, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, ExerciseSingleSetResponse{
+			RecordID:       r.RecordID,
+			TrainedOn:      r.TrainedOn.In(loc).Format("2006-01-02"),
+			Set:            r.SetNo,
+			Reps:           r.Reps,
+			ExerciseWeight: r.ExerciseWeight,
+			BodyWeight:     r.BodyWeight,
+		})
+	}
+
+	slog.InfoContext(ctx, "workout_exercise_sets_fetched",
+		"exercise_id", eid,
+		"count", len(out),
+	)
+
+	return c.JSON(http.StatusOK, out)
 }

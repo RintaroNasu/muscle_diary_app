@@ -17,6 +17,7 @@ type WorkoutService interface {
 	GetMonthRecordDays(userID uint, year int, month int) ([]time.Time, error)
 	UpdateWorkoutRecord(userID uint, recordID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
 	DeleteWorkoutRecord(userID uint, recordID uint) error
+	GetWorkoutRecordsByExercise(userID uint, exerciseID uint) ([]FlatSet, error)
 }
 
 type WorkoutSetData struct {
@@ -27,6 +28,15 @@ type WorkoutSetData struct {
 
 type workoutService struct {
 	repo repository.WorkoutRepository
+}
+
+type FlatSet struct {
+	RecordID       uint
+	TrainedOn      time.Time
+	SetNo          int
+	Reps           int
+	ExerciseWeight float64
+	BodyWeight     float64
 }
 
 var (
@@ -154,4 +164,23 @@ func (s *workoutService) DeleteWorkoutRecord(userID uint, recordID uint) error {
 	}
 
 	return nil
+}
+
+func (s *workoutService) GetWorkoutRecordsByExercise(userID uint, exerciseID uint) ([]FlatSet, error) {
+	rows, err := s.repo.FindSetsByUserAndExercise(userID, exerciseID)
+	if err != nil {
+		return nil, fmt.Errorf("fetch exercise sets failed: %w", err)
+	}
+	out := make([]FlatSet, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, FlatSet{
+			RecordID:       r.RecordID,
+			TrainedOn:      r.TrainedOn,
+			SetNo:          r.SetNo,
+			Reps:           r.Reps,
+			ExerciseWeight: r.ExerciseWeight,
+			BodyWeight:     r.BodyWeight,
+		})
+	}
+	return out, nil
 }
