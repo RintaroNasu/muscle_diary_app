@@ -29,7 +29,7 @@ class CalendarPage extends HookConsumerWidget {
         body: Column(
           children: [
             SizedBox(
-              height:420,
+              height: 420,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Material(

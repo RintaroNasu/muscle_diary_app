@@ -22,12 +22,12 @@ type workoutRepository struct {
 }
 
 type FlatWorkoutSet struct {
-	RecordID        uint      `json:"record_id"`
-	TrainedOn       time.Time `json:"trained_on"`
-	SetNo           int       `json:"set"`
-	Reps            int       `json:"reps"`
-	ExerciseWeight  float64   `json:"exercise_weight"`
-	BodyWeight      float64   `json:"body_weight"`
+	RecordID       uint      `json:"record_id"`
+	TrainedOn      time.Time `json:"trained_on"`
+	SetNo          int       `json:"set"`
+	Reps           int       `json:"reps"`
+	ExerciseWeight float64   `json:"exercise_weight"`
+	BodyWeight     float64   `json:"body_weight"`
 }
 
 func NewWorkoutRepository(db *gorm.DB) WorkoutRepository {
