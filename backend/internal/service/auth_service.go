@@ -22,12 +22,6 @@ type authService struct {
 	repo repository.UserRepository
 }
 
-var (
-	ErrUserAlreadyExists  = errors.New("user already exists")
-	ErrUserNotFound       = errors.New("user not found")
-	ErrInvalidCredentials = errors.New("invalid credentials")
-)
-
 func NewAuthService(repo repository.UserRepository) AuthService {
 	return &authService{repo: repo}
 }

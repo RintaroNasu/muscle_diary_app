@@ -39,13 +39,6 @@ type FlatSet struct {
 	BodyWeight     float64
 }
 
-var (
-	ErrNoSets           = errors.New("no sets")
-	ErrInvalidSetValue  = errors.New("invalid set value")
-	ErrExerciseNotFound = errors.New("exercise not found")
-	ErrRecordNotFound   = errors.New("record not found")
-)
-
 func NewWorkoutService(repo repository.WorkoutRepository) WorkoutService {
 	return &workoutService{repo: repo}
 }
