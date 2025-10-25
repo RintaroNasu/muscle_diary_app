@@ -21,7 +21,6 @@ func NewProfileService(repo repository.ProfileRepository) ProfileService {
 	return &profileService{repo: repo}
 }
 
-
 func (s *profileService) GetProfile(userID uint) (*models.User, error) {
 	user, err := s.repo.GetProfile(userID)
 	if err != nil {
