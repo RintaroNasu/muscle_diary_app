@@ -36,6 +36,10 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	profileSvc := service.NewProfileService(profileRepo)
 	profileHandler := handler.NewProfileHandler(profileSvc)
 
+	summaryRepo := repository.NewSummaryRepository(conn)
+	summarySvc := service.NewSummaryService(summaryRepo)
+	summaryHandler := handler.NewSummaryHandler(summarySvc)
+
 	authRequired.GET("/exercises", exHandler.List)
 	authRequired.POST("/training_records", workoutHandler.CreateWorkoutRecord)
 	authRequired.GET("/training_records/date", workoutHandler.GetWorkoutRecordsByDate)
@@ -45,4 +49,5 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	authRequired.GET("/training_records/exercises/:exerciseId", workoutHandler.GetWorkoutRecordsByExercise)
 	authRequired.GET("/profile", profileHandler.GetProfile)
 	authRequired.PUT("/profile", profileHandler.UpdateProfile)
+	authRequired.GET("/home/summary", summaryHandler.GetHomeSummary)
 }
