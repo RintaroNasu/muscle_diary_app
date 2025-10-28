@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"time"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
@@ -35,7 +36,13 @@ func NewWorkoutRepository(db *gorm.DB) WorkoutRepository {
 }
 
 func (r *workoutRepository) Create(record *models.WorkoutRecord) error {
-	return r.db.Create(record).Error
+	if err := r.db.Create(record).Error; err != nil {
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			return &ConstraintError{Constraint: "foreign_key"}
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *workoutRepository) FindByUserAndDay(userID uint, day time.Time) ([]models.WorkoutRecord, error) {
@@ -74,6 +81,9 @@ func (r *workoutRepository) FindByIDAndUserID(id uint, userID uint) (*models.Wor
 		Where("id = ? AND user_id = ?", id, userID).
 		First(&record).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return &record, nil
@@ -105,6 +115,9 @@ func (r *workoutRepository) Update(record *models.WorkoutRecord) error {
 		}
 		if len(record.Sets) > 0 {
 			if err := tx.Create(&record.Sets).Error; err != nil {
+				if errors.Is(err, gorm.ErrForeignKeyViolated) {
+					return &ConstraintError{Constraint: "foreign_key"}
+				}
 				return err
 			}
 		}

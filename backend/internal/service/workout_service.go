@@ -3,12 +3,10 @@ package service
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
-	"gorm.io/gorm"
 )
 
 type WorkoutService interface {
@@ -71,7 +69,7 @@ func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, ex
 	}
 
 	if err := s.repo.Create(record); err != nil {
-		if errors.Is(err, gorm.ErrForeignKeyViolated) || strings.Contains(err.Error(), "foreign key") {
+		if errors.Is(err, repository.ErrFKViolation) {
 			return nil, ErrExerciseNotFound
 		}
 		return nil, fmt.Errorf("create workout record failed: %w", err)
@@ -113,7 +111,7 @@ func (s *workoutService) UpdateWorkoutRecord(userID uint, recordID uint, bodyWei
 
 	existingRecord, err := s.repo.FindByIDAndUserID(recordID, userID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, repository.ErrNotFound) {
 			return nil, ErrRecordNotFound
 		}
 		return nil, fmt.Errorf("find workout record failed: %w", err)
@@ -134,7 +132,7 @@ func (s *workoutService) UpdateWorkoutRecord(userID uint, recordID uint, bodyWei
 	}
 
 	if err := s.repo.Update(existingRecord); err != nil {
-		if errors.Is(err, gorm.ErrForeignKeyViolated) || strings.Contains(err.Error(), "foreign key") {
+		if errors.Is(err, repository.ErrFKViolation) {
 			return nil, ErrExerciseNotFound
 		}
 		return nil, fmt.Errorf("update workout record failed: %w", err)
@@ -146,7 +144,7 @@ func (s *workoutService) UpdateWorkoutRecord(userID uint, recordID uint, bodyWei
 func (s *workoutService) DeleteWorkoutRecord(userID uint, recordID uint) error {
 	_, err := s.repo.FindByIDAndUserID(recordID, userID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, repository.ErrNotFound) {
 			return ErrRecordNotFound
 		}
 		return fmt.Errorf("find workout record failed: %w", err)
