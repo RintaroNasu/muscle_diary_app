@@ -106,7 +106,9 @@ class HomeSummaryNotifier extends StateNotifier<HomeSummaryState> {
 }
 
 final homeSummaryProvider =
-    StateNotifierProvider.autoDispose<HomeSummaryNotifier, HomeSummaryState>((ref) {
+    StateNotifierProvider.autoDispose<HomeSummaryNotifier, HomeSummaryState>((
+      ref,
+    ) {
       final n = HomeSummaryNotifier();
       n.fetchSummary();
       return n;

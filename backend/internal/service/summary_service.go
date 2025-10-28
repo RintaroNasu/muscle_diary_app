@@ -10,8 +10,8 @@ type HomeSummary struct {
 	TotalTrainingDays int64      `json:"total_training_days"`
 	LatestWeight      *float64   `json:"latest_weight,omitempty"`
 	LatestTrainedOn   *time.Time `json:"trained_on,omitempty"`
-	GoalWeight     *float64   `json:"goal_weight,omitempty"`
-	Height          *float64   `json:"height,omitempty"`
+	GoalWeight        *float64   `json:"goal_weight,omitempty"`
+	Height            *float64   `json:"height,omitempty"`
 }
 
 type SummaryService interface {
@@ -46,7 +46,7 @@ func (s *summaryService) GetHomeSummary(userID uint) (*HomeSummary, error) {
 		TotalTrainingDays: days,
 		LatestWeight:      latestW,
 		LatestTrainedOn:   latestOn,
-		GoalWeight:      goal,
-		Height:          height,
+		GoalWeight:        goal,
+		Height:            height,
 	}, nil
 }
