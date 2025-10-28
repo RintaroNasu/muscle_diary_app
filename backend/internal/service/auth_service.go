@@ -10,7 +10,6 @@ import (
 	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type AuthService interface {
@@ -27,11 +26,9 @@ func NewAuthService(repo repository.UserRepository) AuthService {
 }
 
 func (s *authService) Signup(email, password string) (*models.User, string, error) {
-	_, err := s.repo.FindByEmail(email)
-	if err == nil {
+	if _, err := s.repo.FindByEmail(email); err == nil {
 		return nil, "", ErrUserAlreadyExists
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
+	} else if !errors.Is(err, repository.ErrNotFound) {
 		return nil, "", fmt.Errorf("find user failed: %w", err)
 	}
 
@@ -42,6 +39,9 @@ func (s *authService) Signup(email, password string) (*models.User, string, erro
 
 	u := &models.User{Email: email, Password: string(hash)}
 	if err := s.repo.Create(u); err != nil {
+		if errors.Is(err, repository.ErrUniqueViolation) {
+			return nil, "", ErrUserAlreadyExists
+		}
 		return nil, "", fmt.Errorf("create user failed: %w", err)
 	}
 
@@ -55,7 +55,7 @@ func (s *authService) Signup(email, password string) (*models.User, string, erro
 func (s *authService) Login(email, password string) (*models.User, string, error) {
 	u, err := s.repo.FindByEmail(email)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, repository.ErrNotFound) {
 			return nil, "", ErrUserNotFound
 		}
 		return nil, "", fmt.Errorf("find user failed: %w", err)

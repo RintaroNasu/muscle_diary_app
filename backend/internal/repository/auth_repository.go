@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"gorm.io/gorm"
@@ -22,7 +22,10 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 func (r *userRepository) Create(u *models.User) error {
 	if err := r.db.Create(u).Error; err != nil {
-		return fmt.Errorf("failed to create user: %w", err)
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return ErrUniqueViolation
+		}
+		return err
 	}
 	return nil
 }
@@ -30,7 +33,10 @@ func (r *userRepository) Create(u *models.User) error {
 func (r *userRepository) FindByEmail(email string) (*models.User, error) {
 	var u models.User
 	if err := r.db.Where("email = ?", email).First(&u).Error; err != nil {
-		return nil, fmt.Errorf("failed to find user by email=%s: %w", email, err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
 	}
 	return &u, nil
 }
