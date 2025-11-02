@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"gorm.io/gorm"
@@ -22,7 +23,8 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 func (r *userRepository) Create(u *models.User) error {
 	if err := r.db.Create(u).Error; err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
+		if errors.Is(err, gorm.ErrDuplicatedKey) ||
+			strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			return ErrUniqueViolation
 		}
 		return err
