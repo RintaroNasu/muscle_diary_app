@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
+	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -107,7 +108,7 @@ func TestSummaryRepository_GetLatestWeight(t *testing.T) {
 				require.NoError(t, db.Create(&records).Error)
 			},
 			userID:      1,
-			wantWeight:  ptr(62.0),
+			wantWeight:  utils.Ptr(62.0),
 			expectNil:   false,
 			expectError: false,
 		},
@@ -172,8 +173,8 @@ func TestSummaryRepository_GetProfileBasics(t *testing.T) {
 			prepare: func(db *gorm.DB) {
 				user := models.User{
 					Email:      "test@example.com",
-					Height:     ptr(175.0),
-					GoalWeight: ptr(65.0),
+					Height:     utils.Ptr(175.0),
+					GoalWeight: utils.Ptr(65.0),
 				}
 				require.NoError(t, db.Create(&user).Error)
 			},

@@ -12,6 +12,7 @@ import (
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/httpx"
 	"github.com/RintaroNasu/muscle_diary_app/internal/service"
+	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 )
@@ -43,10 +44,10 @@ func TestSummaryHandler_GetHomeSummary(t *testing.T) {
 				GetHomeSummaryFunc: func(userID uint) (*service.HomeSummary, error) {
 					return &service.HomeSummary{
 						TotalTrainingDays: 10,
-						LatestWeight:      ptr(65.0),
+						LatestWeight:      utils.Ptr(65.0),
 						LatestTrainedOn:   &now,
-						GoalWeight:        ptr(60.0),
-						Height:            ptr(170.0),
+						GoalWeight:        utils.Ptr(60.0),
+						Height:            utils.Ptr(170.0),
 					}, nil
 				},
 			},

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,18 +55,18 @@ func TestSummaryService_GetHomeSummary(t *testing.T) {
 			repo: fakeSummaryRepo{
 				countFn: func(uint) (int64, error) { return 12, nil },
 				latestFn: func(uint) (*float64, *time.Time, error) {
-					return ptr(62.3), &now, nil
+					return utils.Ptr(62.3), &now, nil
 				},
 				basicsFn: func(uint) (*float64, *float64, error) {
-					return ptr(175.0), ptr(65.0), nil
+					return utils.Ptr(175.0), utils.Ptr(65.0), nil
 				},
 			},
 			userID:      1,
 			wantDays:    12,
-			wantWeight:  ptr(62.3),
+			wantWeight:  utils.Ptr(62.3),
 			wantTrained: &now,
-			wantHeight:  ptr(175.0),
-			wantGoal:    ptr(65.0),
+			wantHeight:  utils.Ptr(175.0),
+			wantGoal:    utils.Ptr(65.0),
 		},
 		{
 			name: "【正常系】最新体重が存在しない場合は nil が返ること",
@@ -75,15 +76,15 @@ func TestSummaryService_GetHomeSummary(t *testing.T) {
 					return nil, nil, nil
 				},
 				basicsFn: func(uint) (*float64, *float64, error) {
-					return ptr(170.0), ptr(60.0), nil
+					return utils.Ptr(170.0), utils.Ptr(60.0), nil
 				},
 			},
 			userID:      9,
 			wantDays:    0,
 			wantWeight:  nil,
 			wantTrained: nil,
-			wantHeight:  ptr(170.0),
-			wantGoal:    ptr(60.0),
+			wantHeight:  utils.Ptr(170.0),
+			wantGoal:    utils.Ptr(60.0),
 		},
 		{
 			name: "【異常系】CountTrainingDays のエラーをそのまま返す",

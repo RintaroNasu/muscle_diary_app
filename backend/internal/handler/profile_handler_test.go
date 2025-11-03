@@ -13,6 +13,7 @@ import (
 	"github.com/RintaroNasu/muscle_diary_app/internal/httpx"
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"github.com/RintaroNasu/muscle_diary_app/internal/service"
+	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 )
@@ -29,7 +30,6 @@ func (f *fakeProfileService) UpdateProfile(userID uint, h *float64, g *float64) 
 	return f.updateFunc(userID, h, g)
 }
 
-func ptr[T any](v T) *T { return &v }
 
 func newEchoWithErrHandler() *echo.Echo {
 	e := echo.New()
@@ -64,8 +64,8 @@ func TestProfileHandler_GetProfile(t *testing.T) {
 				getFunc: func(userID uint) (*models.User, error) {
 					return &models.User{
 						Email:      "u@test.com",
-						Height:     ptr(170.0),
-						GoalWeight: ptr(60.0),
+						Height:     utils.Ptr(170.0),
+						GoalWeight: utils.Ptr(60.0),
 					}, nil
 				},
 			},
