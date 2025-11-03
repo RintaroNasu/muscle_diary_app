@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
+	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -22,8 +23,6 @@ func (f *fakeProfileRepo) UpdateProfile(userID uint, height *float64, goalWeight
 	return f.updateFunc(userID, height, goalWeight)
 }
 
-func ptr[T any](v T) *T { return &v }
-
 func TestProfileService_GetProfile(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -39,8 +38,8 @@ func TestProfileService_GetProfile(t *testing.T) {
 				getFunc: func(userID uint) (*models.User, error) {
 					return &models.User{
 						Email:      "test@example.com",
-						Height:     ptr(170.0),
-						GoalWeight: ptr(60.0),
+						Height:     utils.Ptr(170.0),
+						GoalWeight: utils.Ptr(60.0),
 					}, nil
 				},
 			},
@@ -110,14 +109,14 @@ func TestProfileService_UpdateProfile(t *testing.T) {
 				getFunc: func(userID uint) (*models.User, error) {
 					return &models.User{
 						Email:      "updated@example.com",
-						Height:     ptr(175.0),
-						GoalWeight: ptr(65.0),
+						Height:     utils.Ptr(175.0),
+						GoalWeight: utils.Ptr(65.0),
 					}, nil
 				},
 			},
 			userID:     1,
-			height:     ptr(175.0),
-			goalWeight: ptr(65.0),
+			height:     utils.Ptr(175.0),
+			goalWeight: utils.Ptr(65.0),
 			wantUser:   &models.User{Email: "updated@example.com"},
 		},
 		{
@@ -128,8 +127,8 @@ func TestProfileService_UpdateProfile(t *testing.T) {
 				},
 			},
 			userID:      1,
-			height:      ptr(180.0),
-			goalWeight:  ptr(70.0),
+			height:      utils.Ptr(180.0),
+			goalWeight:  utils.Ptr(70.0),
 			errContains: "update failed",
 		},
 		{
@@ -143,8 +142,8 @@ func TestProfileService_UpdateProfile(t *testing.T) {
 				},
 			},
 			userID:      1,
-			height:      ptr(180.0),
-			goalWeight:  ptr(70.0),
+			height:      utils.Ptr(180.0),
+			goalWeight:  utils.Ptr(70.0),
 			errContains: "select failed",
 		},
 	}

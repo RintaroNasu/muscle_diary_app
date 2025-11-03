@@ -14,6 +14,7 @@ import (
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
 	"github.com/RintaroNasu/muscle_diary_app/internal/service"
+	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -41,8 +42,8 @@ func TestProfileIntegration_GetAndUpdate(t *testing.T) {
 		db := newProfileIntegrationDB(t)
 		user := models.User{
 			Email:      "user@example.com",
-			Height:     ptr(170.0),
-			GoalWeight: ptr(60.0),
+			Height:     utils.Ptr(170.0),
+			GoalWeight: utils.Ptr(60.0),
 		}
 		require.NoError(t, db.Create(&user).Error)
 
@@ -73,8 +74,8 @@ func TestProfileIntegration_GetAndUpdate(t *testing.T) {
 		db := newProfileIntegrationDB(t)
 		user := models.User{
 			Email:      "user2@example.com",
-			Height:     ptr(160.0),
-			GoalWeight: ptr(55.0),
+			Height:     utils.Ptr(160.0),
+			GoalWeight: utils.Ptr(55.0),
 		}
 		require.NoError(t, db.Create(&user).Error)
 
@@ -109,5 +110,3 @@ func TestProfileIntegration_GetAndUpdate(t *testing.T) {
 	})
 
 }
-
-func ptr[T any](v T) *T { return &v }

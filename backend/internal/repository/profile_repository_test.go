@@ -5,14 +5,11 @@ import (
 	"testing"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
+	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
-
-func ptr[T any](v T) *T {
-	return &v
-}
 
 func newProfileTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
@@ -36,8 +33,8 @@ func TestProfileRepository_GetProfile(t *testing.T) {
 			prepare: func(db *gorm.DB) {
 				user := models.User{
 					Email:      "test@example.com",
-					Height:     ptr(170.5),
-					GoalWeight: ptr(60.0),
+					Height:     utils.Ptr(170.5),
+					GoalWeight: utils.Ptr(60.0),
 				}
 				require.NoError(t, db.Create(&user).Error)
 			},
@@ -98,8 +95,8 @@ func TestProfileRepository_UpdateProfile(t *testing.T) {
 			prepare: func(db *gorm.DB) {
 				user := models.User{
 					Email:      "test@example.com",
-					Height:     ptr(160.0),
-					GoalWeight: ptr(55.0),
+					Height:     utils.Ptr(160.0),
+					GoalWeight: utils.Ptr(55.0),
 				}
 				require.NoError(t, db.Create(&user).Error)
 			},
