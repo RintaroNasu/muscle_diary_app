@@ -15,6 +15,7 @@ import (
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
 	"github.com/RintaroNasu/muscle_diary_app/internal/service"
+	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -40,8 +41,8 @@ func TestSummaryIntegration_GetHomeSummary(t *testing.T) {
 
 		u := models.User{
 			Email:      "user@example.com",
-			Height:     ptr(170.0),
-			GoalWeight: ptr(60.0),
+			Height:     utils.Ptr(170.0),
+			GoalWeight: utils.Ptr(60.0),
 		}
 		require.NoError(t, db.Create(&u).Error)
 
@@ -91,8 +92,8 @@ func TestSummaryIntegration_GetHomeSummary(t *testing.T) {
 
 		u := models.User{
 			Email:      "empty@example.com",
-			Height:     ptr(180.0),
-			GoalWeight: ptr(70.0),
+			Height:     utils.Ptr(180.0),
+			GoalWeight: utils.Ptr(70.0),
 		}
 		require.NoError(t, db.Create(&u).Error)
 
