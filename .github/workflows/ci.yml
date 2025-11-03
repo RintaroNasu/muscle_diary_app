@@ -75,5 +75,5 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          go test ./internal/... -v -coverprofile=coverage.out || true
+          go test ./... -v -coverprofile=coverage.out || true
           go tool cover -func=coverage.out || true
