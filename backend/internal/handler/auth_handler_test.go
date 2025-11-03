@@ -89,7 +89,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 
-			h := &authHandler{svc: &tt.mockSvc}
+			h := NewAuthHandler(&tt.mockSvc)
 			err := h.SignUp(c)
 
 			if err != nil {
@@ -174,7 +174,7 @@ func TestAuthHandler_Login(t *testing.T) {
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 
-			h := &authHandler{svc: &tt.mockSvc}
+			h := NewAuthHandler(&tt.mockSvc)
 			err := h.Login(c)
 
 			if err != nil {
