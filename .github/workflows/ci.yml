@@ -19,7 +19,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.32.5'
+          flutter-version: "3.32.5"
           cache: true
 
       - name: Install dependencies
@@ -57,24 +57,23 @@ jobs:
           fi
 
   backend-test:
-      name: Go Unit & Integration Tests
-      runs-on: ubuntu-latest
-      defaults:
-        run:
-          working-directory: backend
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-        - name: Setup Go
-          uses: actions/setup-go@v5
-          with:
-            go-version: "1.23"
+    name: Go Unit & Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
 
-        - name: Install dependencies
-          run: go mod tidy
+      - name: Install dependencies
+        run: go mod tidy
 
-        - name: Run tests with coverage
-          run: |
-            go test ./... -v -coverprofile=coverage.out
-            go tool cover -func=coverage.out
-
+      - name: Run tests with coverage
+        run: |
+          go test ./internal/... -v -coverprofile=coverage.out
+          go test ./test/integration -v
