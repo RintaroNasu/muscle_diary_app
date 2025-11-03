@@ -30,7 +30,6 @@ func (f *fakeProfileService) UpdateProfile(userID uint, h *float64, g *float64) 
 	return f.updateFunc(userID, h, g)
 }
 
-
 func newEchoWithErrHandler() *echo.Echo {
 	e := echo.New()
 	logger := slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{}))
