@@ -75,10 +75,12 @@ func (h *workoutHandler) CreateWorkoutRecord(c echo.Context) error {
 	}
 	userID := middleware.GetUserID(c)
 
-	trainedOn, err := time.Parse("2006-01-02", req.TrainedOn)
+	loc, _ := time.LoadLocation("Asia/Tokyo")
+	trainedOn, err := time.ParseInLocation("2006-01-02", req.TrainedOn, loc)
 	if err != nil {
 		return httpx.BadRequest("InvalidDate", "日付の形式が不正です", err)
 	}
+	trainedOn = time.Date(trainedOn.Year(), trainedOn.Month(), trainedOn.Day(), 0, 0, 0, 0, time.UTC)
 
 	var sets []service.WorkoutSetData
 	for _, setReq := range req.Sets {
@@ -127,6 +129,7 @@ func (h *workoutHandler) GetWorkoutRecordsByDate(c echo.Context) error {
 	if err != nil {
 		return httpx.BadRequest("InvalidDate", "date の形式が不正です（YYYY-MM-DD）", err)
 	}
+	day = time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, time.UTC)
 
 	records, err := h.svc.GetDailyRecords(userID, day)
 	if err != nil {
@@ -217,10 +220,12 @@ func (h *workoutHandler) UpdateWorkoutRecord(c echo.Context) error {
 		return httpx.BadRequest("InvalidBody", "リクエストの形式が不正です", err)
 	}
 
-	trainedOn, err := time.Parse("2006-01-02", req.TrainedOn)
+	loc, _ := time.LoadLocation("Asia/Tokyo")
+	trainedOn, err := time.ParseInLocation("2006-01-02", req.TrainedOn, loc)
 	if err != nil {
 		return httpx.BadRequest("InvalidDate", "日付の形式が不正です", err)
 	}
+	trainedOn = time.Date(trainedOn.Year(), trainedOn.Month(), trainedOn.Day(), 0, 0, 0, 0, time.UTC)
 
 	var sets []service.WorkoutSetData
 	for _, setReq := range req.Sets {
