@@ -26,13 +26,15 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
+  final AuthApi _authApi;
   static const _storage = FlutterSecureStorage();
 
-  AuthNotifier() : super(const AuthState()) {
+  AuthNotifier(this._authApi) : super(const AuthState()) {
     _restore();
   }
+
   Future<void> _restore() async {
-    final t = await readStoredToken();
+    final t = await _storage.read(key: 'token');
     if (t != null) {
       // トークンの有効期限をチェック
       if (JwtDecoder.isExpired(t)) {
@@ -48,7 +50,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final token = await loginApi(email, password);
+      final token = await _authApi.loginApi(email, password);
       if (token != null) {
         await _storage.write(key: 'token', value: token);
         state = AuthState(isLoading: false, token: token);
@@ -63,7 +65,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> signup(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final token = await signupApi(email, password);
+      final token = await _authApi.signupApi(email, password);
       if (token != null) {
         await _storage.write(key: 'token', value: token);
         state = AuthState(isLoading: false, token: token);
@@ -81,6 +83,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
-  (ref) => AuthNotifier(),
-);
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final authApi = ref.watch(authApiProvider);
+  return AuthNotifier(authApi);
+});

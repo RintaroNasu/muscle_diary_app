@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/controllers/common/exercises_provider.dart';
 import 'package:frontend/pages/calendar/record_detail_sheet.dart';
+import 'package:frontend/utils/format.dart';
 import 'package:frontend/widgets/unfocus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../controllers/calendar_page_controller.dart';
 import 'package:table_calendar/table_calendar.dart';
-
-String _kg(double v) {
-  return '${v % 1 == 0 ? v.toStringAsFixed(0) : v.toStringAsFixed(1)}kg';
-}
-
-String _ymd(DateTime d) => '${d.year}/${_two(d.month)}/${_two(d.day)}';
-String _two(int n) => n.toString().padLeft(2, '0');
 
 class CalendarPage extends HookConsumerWidget {
   const CalendarPage({super.key});
@@ -71,7 +65,7 @@ class CalendarPage extends HookConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    _ymd(selectedDate),
+                    ymd(selectedDate),
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                   ),
                   const SizedBox(width: 8),
@@ -100,7 +94,7 @@ class CalendarPage extends HookConsumerWidget {
                       final sets = r.sets
                           .map(
                             (s) =>
-                                '${s.setNo}set: ${_kg(s.exerciseWeight)} × ${s.reps}',
+                                '${s.setNo}set: ${kg(s.exerciseWeight)} × ${s.reps}',
                           )
                           .join(' / ');
 
@@ -116,7 +110,7 @@ class CalendarPage extends HookConsumerWidget {
                             r.exerciseName,
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
-                          subtitle: Text('BW ${_kg(r.bodyWeight)} • $sets'),
+                          subtitle: Text('BW ${kg(r.bodyWeight)} • $sets'),
                           onTap: () {
                             exercises.when(
                               data: (data) {

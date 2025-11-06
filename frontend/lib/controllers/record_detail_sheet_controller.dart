@@ -70,7 +70,9 @@ class RecordDetailSheetController
         'trained_on': trainedOn,
         'sets': setsPayload,
       };
-      await updateWorkoutRecord(recordId, body);
+
+      final api = ref.read(workoutRecordsApiProvider);
+      await api.updateWorkoutRecord(recordId, body);
 
       state = state.copyWith(isSubmitting: false, successMessage: '記録を更新しました');
       onSuccess?.call();
@@ -89,7 +91,8 @@ class RecordDetailSheetController
         errorMessage: null,
         successMessage: null,
       );
-      await deleteWorkoutRecord(recordId);
+      final api = ref.read(workoutRecordsApiProvider);
+      await api.deleteWorkoutRecord(recordId);
 
       state = state.copyWith(isDeleting: false, successMessage: '記録を削除しました');
       onSuccess?.call();

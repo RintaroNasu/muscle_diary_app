@@ -1,101 +1,75 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
+import 'package:frontend/repositories/api.dart';
+import 'package:frontend/repositories/provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-const _baseUrl = 'http://localhost:8080';
+class WorkoutRecordsApi {
+  final ApiClient _api;
+  WorkoutRecordsApi(this._api);
 
-Future<void> createWorkoutRecord(Map<String, dynamic> body) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため記録を保存できません（トークンなし）');
-  }
+  Future<void> createWorkoutRecord(Map<String, dynamic> body) async {
+    final res = await _api.post('/training_records', body: body);
 
-  final res = await http.post(
-    Uri.parse('$_baseUrl/training_records'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode(body),
-  );
+    if (res.statusCode == 200 || res.statusCode == 201) return;
 
-  if (res.statusCode == 200 || res.statusCode == 201) return;
-
-  if (res.statusCode == 401) {
-    throw Exception('認証エラー: ログインし直してください');
-  }
-  if (res.statusCode == 400) {
-    try {
-      final data = jsonDecode(res.body);
-      throw Exception(data['message'] ?? '入力エラー');
-    } catch (_) {
-      throw Exception('入力エラー: ${res.body}');
+    if (res.statusCode == 401) {
+      throw Exception('認証エラー: ログインし直してください');
     }
-  }
-
-  throw Exception('記録の作成に失敗しました: ${res.statusCode} ${res.body}');
-}
-
-Future<void> updateWorkoutRecord(
-  int recordId,
-  Map<String, dynamic> body,
-) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため記録を更新できません（トークンなし）');
-  }
-
-  final res = await http.put(
-    Uri.parse('$_baseUrl/training_records/$recordId'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode(body),
-  );
-
-  if (res.statusCode == 200 || res.statusCode == 204) return;
-
-  if (res.statusCode == 401) {
-    throw Exception('認証エラー: ログインし直してください');
-  }
-  if (res.statusCode == 400) {
-    try {
-      final data = jsonDecode(res.body);
-      throw Exception(data['message'] ?? '入力エラー');
-    } catch (_) {
-      throw Exception('入力エラー: ${res.body}');
+    if (res.statusCode == 400) {
+      try {
+        final data = jsonDecode(res.body);
+        throw Exception(data['message'] ?? '入力エラー');
+      } catch (_) {
+        throw Exception('入力エラー: ${res.body}');
+      }
     }
-  }
-  if (res.statusCode == 404) {
-    throw Exception('記録が見つかりません');
+
+    throw Exception('記録の作成に失敗しました: ${res.statusCode} ${res.body}');
   }
 
-  throw Exception('記録の更新に失敗しました: ${res.statusCode} ${res.body}');
+  Future<void> updateWorkoutRecord(
+    int recordId,
+    Map<String, dynamic> body,
+  ) async {
+    final res = await _api.put('/training_records/$recordId', body: body);
+
+    if (res.statusCode == 200 || res.statusCode == 204) return;
+
+    if (res.statusCode == 401) {
+      throw Exception('認証エラー: ログインし直してください');
+    }
+    if (res.statusCode == 400) {
+      try {
+        final data = jsonDecode(res.body);
+        throw Exception(data['message'] ?? '入力エラー');
+      } catch (_) {
+        throw Exception('入力エラー: ${res.body}');
+      }
+    }
+    if (res.statusCode == 404) {
+      throw Exception('記録が見つかりません');
+    }
+
+    throw Exception('記録の更新に失敗しました: ${res.statusCode} ${res.body}');
+  }
+
+  Future<void> deleteWorkoutRecord(int recordId) async {
+    final res = await _api.delete('/training_records/$recordId');
+
+    if (res.statusCode == 200 || res.statusCode == 204) return;
+
+    if (res.statusCode == 401) {
+      throw Exception('認証エラー: ログインし直してください');
+    }
+    if (res.statusCode == 404) {
+      throw Exception('記録が見つかりません');
+    }
+
+    throw Exception('記録の削除に失敗しました: ${res.statusCode} ${res.body}');
+  }
 }
 
-Future<void> deleteWorkoutRecord(int recordId) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため記録を削除できません（トークンなし）');
-  }
-
-  final res = await http.delete(
-    Uri.parse('$_baseUrl/training_records/$recordId'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
-
-  if (res.statusCode == 200 || res.statusCode == 204) return;
-
-  if (res.statusCode == 401) {
-    throw Exception('認証エラー: ログインし直してください');
-  }
-  if (res.statusCode == 404) {
-    throw Exception('記録が見つかりません');
-  }
-
-  throw Exception('記録の削除に失敗しました: ${res.statusCode} ${res.body}');
-}
+final workoutRecordsApiProvider = Provider<WorkoutRecordsApi>((ref) {
+  final api = ref.watch(apiClientProvider);
+  return WorkoutRecordsApi(api);
+});

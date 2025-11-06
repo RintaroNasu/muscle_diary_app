@@ -11,7 +11,8 @@ final dayRecordsProvider = FutureProvider.autoDispose<List<DayRecord>>((
   ref,
 ) async {
   final selectedDate = ref.watch(selectedDateProvider);
-  final records = await fetchDayRecords(ref, selectedDate);
+  final api = ref.read(calendarRecordsApiProvider);
+  final records = await api.fetchDayRecords(ref, selectedDate);
   return records.map((json) => DayRecord.fromJson(json)).toList();
 });
 
@@ -21,5 +22,6 @@ final monthHasRecordDaysProvider = FutureProvider.autoDispose<Set<DateTime>>((
   final selectedDate = ref.watch(selectedDateProvider);
   final year = selectedDate.year;
   final month = selectedDate.month;
-  return await fetchMonthRecordDays(year, month);
+  final api = ref.read(calendarRecordsApiProvider);
+  return await api.fetchMonthRecordDays(year, month);
 });

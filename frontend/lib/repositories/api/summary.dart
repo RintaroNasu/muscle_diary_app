@@ -1,35 +1,32 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
+import 'package:frontend/repositories/api.dart';
 import 'package:frontend/models/summary.dart';
+import 'package:frontend/repositories/provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-const _baseUrl = 'http://localhost:8080';
+class SummaryApi {
+  final ApiClient _api;
+  SummaryApi(this._api);
 
-Future<HomeSummary?> getHomeSummary() async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのためサマリーを取得できません（トークンなし）');
-  }
-
-  final res = await http.get(
-    Uri.parse('$_baseUrl/home/summary'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
-
-  if (res.statusCode == 200) {
-    final data = jsonDecode(res.body);
-    if (data is Map<String, dynamic>) {
-      return HomeSummary.fromJson(data);
+  Future<HomeSummary?> getHomeSummary() async {
+    final res = await _api.get('/home/summary');
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      if (data is Map<String, dynamic>) {
+        return HomeSummary.fromJson(data);
+      }
+      return null;
     }
-    return null;
-  }
 
-  if (res.statusCode == 401) {
-    throw Exception('認証エラー: ログインし直してください');
-  }
+    if (res.statusCode == 401) {
+      throw Exception('認証エラー: ログインし直してください');
+    }
 
-  throw Exception('サマリー取得に失敗しました: ${res.statusCode}');
+    throw Exception('サマリー取得に失敗しました: ${res.statusCode}');
+  }
 }
+
+final summaryApiProvider = Provider<SummaryApi>((ref) {
+  final api = ref.watch(apiClientProvider);
+  return SummaryApi(api);
+});

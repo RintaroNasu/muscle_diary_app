@@ -1,5 +1,5 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:frontend/repositories/api/summary.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class HomeSummaryState {
   final bool isLoading;
@@ -50,12 +50,14 @@ class HomeSummaryState {
 }
 
 class HomeSummaryNotifier extends StateNotifier<HomeSummaryState> {
-  HomeSummaryNotifier() : super(const HomeSummaryState(isLoading: false));
+  final SummaryApi _summaryApi;
+  HomeSummaryNotifier(this._summaryApi)
+    : super(const HomeSummaryState(isLoading: false));
 
   Future<void> fetchSummary() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final s = await getHomeSummary();
+      final s = await _summaryApi.getHomeSummary();
       if (s == null) {
         state = state.copyWith(isLoading: false, error: 'データがありません');
         return;
@@ -109,7 +111,8 @@ final homeSummaryProvider =
     StateNotifierProvider.autoDispose<HomeSummaryNotifier, HomeSummaryState>((
       ref,
     ) {
-      final n = HomeSummaryNotifier();
+      final summaryApi = ref.watch(summaryApiProvider);
+      final n = HomeSummaryNotifier(summaryApi);
       n.fetchSummary();
       return n;
     });
