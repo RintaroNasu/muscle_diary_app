@@ -1,5 +1,5 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:frontend/repositories/api/profile.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class ProfileState {
   final double? height;
@@ -34,7 +34,8 @@ class ProfileState {
 }
 
 class ProfileNotifier extends StateNotifier<ProfileState> {
-  ProfileNotifier() : super(const ProfileState());
+  final ProfileApi _profileApi;
+  ProfileNotifier(this._profileApi) : super(const ProfileState());
 
   Future<void> loadProfile() async {
     try {
@@ -43,7 +44,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         error: null,
         successMessage: null,
       );
-      final data = await getProfile();
+      final data = await _profileApi.getProfile();
       if (data != null) {
         state = state.copyWith(
           height: (data['height_cm'] as num?)?.toDouble(),
@@ -65,7 +66,10 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         error: null,
         successMessage: null,
       );
-      await updateProfileApi(height: height, goalWeight: goalWeight);
+      await _profileApi.updateProfileApi(
+        height: height,
+        goalWeight: goalWeight,
+      );
       state = state.copyWith(
         height: height,
         goalWeight: goalWeight,
@@ -80,7 +84,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
 final profileControllerProvider =
     StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
-      final notifier = ProfileNotifier();
+      final profileApi = ref.watch(profileApiProvider);
+      final notifier = ProfileNotifier(profileApi);
       notifier.loadProfile();
       return notifier;
     });

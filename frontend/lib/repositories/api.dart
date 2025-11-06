@@ -22,7 +22,7 @@ class ApiClient {
     };
   }
 
-  Future<http.Response> get(String path, {Map<String, String>? headers}) async {
+  Future<http.Response> get(String path) async {
     final headers = await _headers();
     return _client.get(Uri.parse('$baseUrl$path'), headers: headers);
   }
@@ -40,11 +40,7 @@ class ApiClient {
     );
   }
 
-  Future<http.Response> put(
-    String path, {
-    Map<String, String>? headers,
-    Object? body,
-  }) async {
+  Future<http.Response> put(String path, {Object? body}) async {
     final headers = await _headers();
     return _client.put(
       Uri.parse('$baseUrl$path'),
@@ -53,10 +49,7 @@ class ApiClient {
     );
   }
 
-  Future<http.Response> delete(
-    String path, {
-    Map<String, String>? headers,
-  }) async {
+  Future<http.Response> delete(String path) async {
     final headers = await _headers();
     return _client.delete(Uri.parse('$baseUrl$path'), headers: headers);
   }

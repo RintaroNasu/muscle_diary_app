@@ -7,7 +7,8 @@ final selectedExerciseIdProvider = StateProvider<int?>((ref) => null);
 final exerciseSetsProvider = FutureProvider.autoDispose
     .family<List<WorkoutSetItem>, String>((ref, exerciseId) async {
       final id = int.parse(exerciseId);
-      final items = await fetchWorkoutSetsByExercise(id);
+      final api = ref.read(trendApiProvider);
+      final items = await api.fetchWorkoutSetsByExercise(id);
 
       items.sort((a, b) {
         final c = a.trainedOn.compareTo(b.trainedOn);

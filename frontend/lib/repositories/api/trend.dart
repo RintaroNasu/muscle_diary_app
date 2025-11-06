@@ -1,35 +1,47 @@
 import 'dart:convert';
 import 'package:frontend/repositories/api.dart';
 import 'package:frontend/models/workout_set_item.dart';
+import 'package:frontend/repositories/provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-final _api = ApiClient();
+class TrendApi {
+  final ApiClient _api;
+  TrendApi(this._api);
 
-Future<List<WorkoutSetItem>> fetchWorkoutSetsByExercise(int exerciseId) async {
-  final res = await _api.get('/training_records/exercises/$exerciseId');
+  Future<List<WorkoutSetItem>> fetchWorkoutSetsByExercise(
+    int exerciseId,
+  ) async {
+    final res = await _api.get('/training_records/exercises/$exerciseId');
 
-  if (res.statusCode == 200) {
-    try {
-      final data = jsonDecode(res.body);
-      if (data is List) {
-        return data.map((e) => WorkoutSetItem.fromJson(e)).toList();
+    if (res.statusCode == 200) {
+      try {
+        final data = jsonDecode(res.body);
+        if (data is List) {
+          return data.map((e) => WorkoutSetItem.fromJson(e)).toList();
+        }
+        return [];
+      } catch (e) {
+        throw Exception('レスポンスの解析に失敗しました: $e');
       }
-      return [];
-    } catch (e) {
-      throw Exception('レスポンスの解析に失敗しました: $e');
     }
-  }
 
-  if (res.statusCode == 401) {
-    throw Exception('認証エラー: ログインし直してください');
-  }
-  if (res.statusCode == 400) {
-    try {
-      final data = jsonDecode(res.body);
-      throw Exception(data['error'] ?? '種目IDが不正です');
-    } catch (_) {
-      throw Exception('種目IDが不正です: ${res.body}');
+    if (res.statusCode == 401) {
+      throw Exception('認証エラー: ログインし直してください');
     }
-  }
+    if (res.statusCode == 400) {
+      try {
+        final data = jsonDecode(res.body);
+        throw Exception(data['error'] ?? '種目IDが不正です');
+      } catch (_) {
+        throw Exception('種目IDが不正です: ${res.body}');
+      }
+    }
 
-  throw Exception('取得に失敗しました: ${res.statusCode} ${res.body}');
+    throw Exception('取得に失敗しました: ${res.statusCode} ${res.body}');
+  }
 }
+
+final trendApiProvider = Provider<TrendApi>((ref) {
+  final api = ref.watch(apiClientProvider);
+  return TrendApi(api);
+});

@@ -1,6 +1,6 @@
+import 'package:frontend/repositories/api/workout_records.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/repositories/api/workout_records.dart';
 import 'package:frontend/controllers/common/record_form_controller.dart';
 
 class WorkoutRecordPageState {
@@ -61,7 +61,8 @@ class WorkoutRecordPageController
         'sets': setsPayload,
         'trained_on': trainedOn,
       };
-      await createWorkoutRecord(body);
+      final api = ref.read(workoutRecordsApiProvider);
+      await api.createWorkoutRecord(body);
 
       state = state.copyWith(isSubmitting: false, successMessage: '記録を保存しました');
       onSuccess?.call();
