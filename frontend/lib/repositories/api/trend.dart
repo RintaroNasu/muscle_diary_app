@@ -1,23 +1,11 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:frontend/repositories/api.dart';
 import 'package:frontend/models/workout_set_item.dart';
-import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
 
-const _baseUrl = 'http://localhost:8080';
+final _api = ApiClient();
 
 Future<List<WorkoutSetItem>> fetchWorkoutSetsByExercise(int exerciseId) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため取得できません（トークンなし）');
-  }
-
-  final res = await http.get(
-    Uri.parse('$_baseUrl/training_records/exercises/$exerciseId'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
+  final res = await _api.get('/training_records/exercises/$exerciseId');
 
   if (res.statusCode == 200) {
     try {

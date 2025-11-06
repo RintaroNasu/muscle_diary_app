@@ -1,23 +1,10 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
+import 'package:frontend/repositories/api.dart';
 
-const _baseUrl = 'http://localhost:8080';
+final _api = ApiClient();
 
 Future<void> createWorkoutRecord(Map<String, dynamic> body) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため記録を保存できません（トークンなし）');
-  }
-
-  final res = await http.post(
-    Uri.parse('$_baseUrl/training_records'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode(body),
-  );
+  final res = await _api.post('/training_records', body: body);
 
   if (res.statusCode == 200 || res.statusCode == 201) return;
 
@@ -40,19 +27,7 @@ Future<void> updateWorkoutRecord(
   int recordId,
   Map<String, dynamic> body,
 ) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため記録を更新できません（トークンなし）');
-  }
-
-  final res = await http.put(
-    Uri.parse('$_baseUrl/training_records/$recordId'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode(body),
-  );
+  final res = await _api.put('/training_records/$recordId', body: body);
 
   if (res.statusCode == 200 || res.statusCode == 204) return;
 
@@ -75,18 +50,7 @@ Future<void> updateWorkoutRecord(
 }
 
 Future<void> deleteWorkoutRecord(int recordId) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため記録を削除できません（トークンなし）');
-  }
-
-  final res = await http.delete(
-    Uri.parse('$_baseUrl/training_records/$recordId'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
+  final res = await _api.delete('/training_records/$recordId');
 
   if (res.statusCode == 200 || res.statusCode == 204) return;
 

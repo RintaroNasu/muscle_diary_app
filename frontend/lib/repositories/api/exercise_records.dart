@@ -1,22 +1,10 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
+import 'package:frontend/repositories/api.dart';
 
-const _baseUrl = 'http://localhost:8080';
+final _api = ApiClient();
 
 Future<List<Map<String, dynamic>>> getExercises() async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのためエクササイズ一覧を取得できません（トークンなし）');
-  }
-
-  final res = await http.get(
-    Uri.parse('$_baseUrl/exercises'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
+  final res = await _api.get('/exercises');
 
   if (res.statusCode == 200) {
     try {

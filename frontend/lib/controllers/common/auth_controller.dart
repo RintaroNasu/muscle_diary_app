@@ -32,7 +32,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _restore();
   }
   Future<void> _restore() async {
-    final t = await readStoredToken();
+    final t = await _storage.read(key: 'token');
     if (t != null) {
       // トークンの有効期限をチェック
       if (JwtDecoder.isExpired(t)) {

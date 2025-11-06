@@ -1,22 +1,10 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
+import 'package:frontend/repositories/api.dart';
 
-const _baseUrl = 'http://localhost:8080';
+final _api = ApiClient();
 
 Future<Map<String, dynamic>?> getProfile() async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのためプロフィールを取得できません（トークンなし）');
-  }
-
-  final res = await http.get(
-    Uri.parse('$_baseUrl/profile'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
+  final res = await _api.get('/profile');
 
   if (res.statusCode == 200) {
     final data = jsonDecode(res.body);
@@ -35,18 +23,9 @@ Future<void> updateProfileApi({
   required double height,
   required double goalWeight,
 }) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのためプロフィールを更新できません（トークンなし）');
-  }
-
-  final res = await http.put(
-    Uri.parse('$_baseUrl/profile'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode({'height_cm': height, 'goal_weight_kg': goalWeight}),
+  final res = await _api.put(
+    '/profile',
+    body: {'height_cm': height, 'goal_weight_kg': goalWeight},
   );
 
   if (res.statusCode == 200 || res.statusCode == 204) return;

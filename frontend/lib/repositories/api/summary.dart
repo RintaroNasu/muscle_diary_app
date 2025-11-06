@@ -1,23 +1,11 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
+import 'package:frontend/repositories/api.dart';
 import 'package:frontend/models/summary.dart';
 
-const _baseUrl = 'http://localhost:8080';
+final _api = ApiClient();
 
 Future<HomeSummary?> getHomeSummary() async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのためサマリーを取得できません（トークンなし）');
-  }
-
-  final res = await http.get(
-    Uri.parse('$_baseUrl/home/summary'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
+  final res = await _api.get('/home/summary');
 
   if (res.statusCode == 200) {
     final data = jsonDecode(res.body);

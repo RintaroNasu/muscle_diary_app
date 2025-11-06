@@ -1,29 +1,17 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:frontend/repositories/api.dart';
 import 'package:frontend/controllers/common/auth_controller.dart';
-import 'package:frontend/repositories/api/auth.dart' show readStoredToken;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-const _baseUrl = 'http://localhost:8080';
+final _api = ApiClient();
 
 Future<List<Map<String, dynamic>>> fetchDayRecords(
   Ref ref,
   DateTime date,
 ) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため記録を取得できません（トークンなし）');
-  }
-
   final dateStr =
       '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  final res = await http.get(
-    Uri.parse('$_baseUrl/training_records/date?date=$dateStr'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
+  final res = await _api.get('/training_records/date?date=$dateStr');
 
   if (res.statusCode == 200) {
     try {
@@ -54,19 +42,8 @@ Future<List<Map<String, dynamic>>> fetchDayRecords(
 }
 
 Future<Set<DateTime>> fetchMonthRecordDays(int year, int month) async {
-  final token = await readStoredToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('未ログインのため記録を取得できません（トークンなし）');
-  }
-
-  final res = await http.get(
-    Uri.parse(
-      '$_baseUrl/training_records/monthly_days?year=$year&month=$month',
-    ),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
+  final res = await _api.get(
+    '/training_records/monthly_days?year=$year&month=$month',
   );
 
   if (res.statusCode == 200) {

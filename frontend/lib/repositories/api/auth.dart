@@ -1,18 +1,12 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:frontend/repositories/api.dart';
 
-const _baseUrl = 'http://localhost:8080';
-const _tokenKey = 'token';
-final _storage = const FlutterSecureStorage();
-
-Future<String?> readStoredToken() => _storage.read(key: _tokenKey);
+final _api = ApiClient();
 
 Future<String?> loginApi(String email, String password) async {
-  final response = await http.post(
-    Uri.parse('$_baseUrl/login'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'email': email, 'password': password}),
+  final response = await _api.post(
+    '/login',
+    body: {'email': email, 'password': password},
   );
 
   if (response.statusCode == 200) {
@@ -26,10 +20,9 @@ Future<String?> loginApi(String email, String password) async {
 }
 
 Future<String?> signupApi(String email, String password) async {
-  final response = await http.post(
-    Uri.parse('$_baseUrl/signup'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'email': email, 'password': password}),
+  final response = await _api.post(
+    '/signup',
+    body: ({'email': email, 'password': password}),
   );
   if (response.statusCode == 201) {
     final data = jsonDecode(response.body);
