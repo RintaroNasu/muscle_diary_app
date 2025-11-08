@@ -26,12 +26,12 @@ Map<DateTime, List<WorkoutSetItem>> groupSetsByDate(List<WorkoutSetItem> src) {
 
   final map = <DateTime, List<WorkoutSetItem>>{};
   for (final it in list) {
-    final key = DateTime(
-      it.trainedOn.year,
-      it.trainedOn.month,
-      it.trainedOn.day,
-    );
+    final t = it.trainedOn.toLocal();
+    final key = DateTime(t.year, t.month, t.day);
     (map[key] ??= []).add(it);
+  }
+  for (final key in map.keys) {
+    map[key]!.sort((a, b) => a.setNo.compareTo(b.setNo));
   }
   return map;
 }
@@ -55,6 +55,8 @@ List<ChartGroup> toChartGroups(Map<DateTime, List<WorkoutSetItem>> grouped) {
 }
 
 int maxReps(List<ChartGroup> groups) {
+  if (groups.isEmpty) return 2;
+
   var m = 0;
   for (final g in groups) {
     for (final b in g.bars) {
