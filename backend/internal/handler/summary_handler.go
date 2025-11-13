@@ -18,6 +18,14 @@ type summaryHandler struct {
 	svc service.SummaryService
 }
 
+type SummaryResponse struct {
+	TotalTrainingDays int      `json:"total_training_days"`
+	LatestWeight      *float64 `json:"latest_weight"`
+	LatestTrainedOn   string   `json:"latest_trained_on"`
+	GoalWeight        *float64 `json:"goal_weight"`
+	Height            *float64 `json:"height"`
+}
+
 func NewSummaryHandler(svc service.SummaryService) SummaryHandler {
 	return &summaryHandler{svc: svc}
 }
@@ -31,14 +39,27 @@ func (h *summaryHandler) GetHomeSummary(c echo.Context) error {
 		return httpx.Internal("サマリーの取得に失敗しました", err)
 	}
 
+	var latestOn string
+	if summary.LatestTrainedOn != nil {
+		latestOn = summary.LatestTrainedOn.Format("2006-01-02")
+	}
+
+	res := SummaryResponse{
+		TotalTrainingDays: int(summary.TotalTrainingDays),
+		LatestWeight:      summary.LatestWeight,
+		LatestTrainedOn:   latestOn,
+		GoalWeight:        summary.GoalWeight,
+		Height:            summary.Height,
+	}
+
 	slog.InfoContext(ctx, "home_summary_fetched",
 		"user_id", userID,
-		"total_training_days", summary.TotalTrainingDays,
-		"latest_weight", summary.LatestWeight,
-		"latest_trained_on", summary.LatestTrainedOn,
-		"goal_weight", summary.GoalWeight,
-		"height", summary.Height,
+		"total_training_days", res.TotalTrainingDays,
+		"latest_weight", res.LatestWeight,
+		"latest_trained_on", res.LatestTrainedOn,
+		"goal_weight", res.GoalWeight,
+		"height", res.Height,
 	)
 
-	return c.JSON(http.StatusOK, summary)
+	return c.JSON(http.StatusOK, res)
 }

@@ -22,6 +22,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type SummaryResponseDTO struct {
+	TotalTrainingDays int      `json:"total_training_days"`
+	LatestWeight      *float64 `json:"latest_weight"`
+	LatestTrainedOn   string   `json:"latest_trained_on"`
+	GoalWeight        *float64 `json:"goal_weight"`
+	Height            *float64 `json:"height"`
+}
+
 func newSummaryIntegrationDB(t *testing.T) *gorm.DB {
 	t.Helper()
 	dsn := fmt.Sprintf("file:%s?mode=memory&cache=shared&_fk=1", t.Name())
@@ -73,14 +81,15 @@ func TestSummaryIntegration_GetHomeSummary(t *testing.T) {
 
 		require.Equal(t, http.StatusOK, rec.Code)
 
-		var got service.HomeSummary
+		var got SummaryResponseDTO
 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
 
-		require.Equal(t, int64(2), got.TotalTrainingDays)
+		require.Equal(t, 2, got.TotalTrainingDays)
 		require.NotNil(t, got.LatestWeight)
 		require.InDelta(t, 62.0, *got.LatestWeight, 0.001)
 		require.NotNil(t, got.LatestTrainedOn)
-		require.WithinDuration(t, now, *got.LatestTrainedOn, time.Second)
+		expectedDate := now.Format("2006-01-02")
+		require.Equal(t, expectedDate, got.LatestTrainedOn)
 		require.NotNil(t, got.Height)
 		require.InDelta(t, 170.0, *got.Height, 0.001)
 		require.NotNil(t, got.GoalWeight)
