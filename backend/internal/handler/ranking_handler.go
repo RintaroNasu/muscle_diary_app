@@ -45,4 +45,3 @@ func (h *rankingHandler) MonthlyGymDays(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, list)
 }
-
