@@ -11,7 +11,6 @@ import (
 
 type RankingRepository interface {
 	MonthlyGymDays(ctx context.Context, from, to time.Time) ([]GymDaysRow, error)
-	MonthlyTotalVolume(ctx context.Context, from, to time.Time) ([]TotalVolumeRow, error)
 }
 
 type rankingRepository struct {
@@ -23,9 +22,9 @@ func NewRankingRepository(db *gorm.DB) RankingRepository {
 }
 
 type GymDaysRow struct {
-	UserID uint
-	Email  string
-	TotalTrainingDays   int64
+	UserID            uint
+	Email             string
+	TotalTrainingDays int64
 }
 
 type TotalVolumeRow struct {
@@ -49,24 +48,4 @@ func (r *rankingRepository) MonthlyGymDays(ctx context.Context, from, to time.Ti
 	}
 	fmt.Println("rows", rows)
 	return rows, nil
-}
-
-func (r *rankingRepository) MonthlyTotalVolume(
-	ctx context.Context, from, to time.Time,
-) ([]TotalVolumeRow, error) {
-	var rows []TotalVolumeRow
-	err := r.db.WithContext(ctx).
-		Model(&models.WorkoutSet{}).
-		Select(`
-			workout_records.user_id AS user_id,
-			users.email AS email,
-			SUM(workout_sets.exercise_weight * workout_sets.reps) AS total_volume
-		`).
-		Joins("JOIN workout_records ON workout_records.id = workout_sets.workout_record_id").
-		Joins("JOIN users ON users.id = workout_records.user_id").
-		Where("workout_records.trained_on >= ? AND workout_records.trained_on < ?", from, to).
-		Group("workout_records.user_id, users.email").
-		Order("total_volume DESC, workout_records.user_id ASC").
-		Scan(&rows).Error
-	return rows, err
 }

@@ -14,7 +14,6 @@ import (
 
 type RankingHandler interface {
 	MonthlyGymDays(c echo.Context) error
-	MonthlyTotalVolume(c echo.Context) error
 }
 
 type rankingHandler struct {
@@ -47,18 +46,3 @@ func (h *rankingHandler) MonthlyGymDays(c echo.Context) error {
 	return c.JSON(http.StatusOK, list)
 }
 
-func (h *rankingHandler) MonthlyTotalVolume(c echo.Context) error {
-	ctx := c.Request().Context()
-	now := time.Now()
-	year := now.Year()
-	month := int(now.Month())
-
-	list, err := h.svc.MonthlyTotalVolume(ctx, year, month)
-	if err != nil {
-		return httpx.Internal("総ボリュームランキングの取得に失敗しました", err)
-	}
-
-	return c.JSON(http.StatusOK, echo.Map{
-		"rankings": list,
-	})
-}

@@ -11,7 +11,6 @@ import (
 
 type RankingService interface {
 	MonthlyGymDays(ctx context.Context, year, month int) ([]GymDaysDTO, error)
-	MonthlyTotalVolume(ctx context.Context, year, month int) ([]TotalVolumeDTO, error)
 }
 
 type rankingService struct {
@@ -69,30 +68,6 @@ func (s *rankingService) MonthlyGymDays(
 			UserID:            r.UserID,
 			Email:             r.Email,
 			TotalTrainingDays: r.TotalTrainingDays,
-		})
-	}
-	return out, nil
-}
-
-func (s *rankingService) MonthlyTotalVolume(
-	ctx context.Context, year, month int,
-) ([]TotalVolumeDTO, error) {
-	from, to, err := calcMonthRange(year, month)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := s.repo.MonthlyTotalVolume(ctx, from, to)
-	if err != nil {
-		return nil, err
-	}
-
-	out := make([]TotalVolumeDTO, 0, len(rows))
-	for _, r := range rows {
-		out = append(out, TotalVolumeDTO{
-			UserID:      r.UserID,
-			Email:       r.Email,
-			TotalVolume: r.TotalVolume,
 		})
 	}
 	return out, nil

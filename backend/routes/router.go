@@ -55,5 +55,4 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	authRequired.PUT("/profile", profileHandler.UpdateProfile)
 	authRequired.GET("/home/summary", summaryHandler.GetHomeSummary)
 	authRequired.GET("/ranking/monthly_gym_days", rankingHandler.MonthlyGymDays)
-	authRequired.GET("/ranking/monthly_total_volume", rankingHandler.MonthlyTotalVolume)
 }
