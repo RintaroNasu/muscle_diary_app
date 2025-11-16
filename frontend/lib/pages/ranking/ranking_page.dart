@@ -28,6 +28,8 @@ class RankingPage extends HookConsumerWidget {
               return const Center(child: Text('今月のジム日数ランキングはまだありません。'));
             }
 
+            final top5 = rows.take(5).toList();
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -42,10 +44,10 @@ class RankingPage extends HookConsumerWidget {
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
-                    itemCount: rows.length,
+                    itemCount: top5.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
-                      final item = rows[index];
+                      final item = top5[index];
                       final rank = index + 1;
                       return RankingRow(
                         rank: rank,
