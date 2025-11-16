@@ -10,7 +10,6 @@ class GymDaysRanking {
   });
 
   factory GymDaysRanking.fromJson(Map<String, dynamic> json) {
-    print('ranking json: $json');
     return GymDaysRanking(
       userId: json['user_id'] as int,
       email: json['email'] as String,
