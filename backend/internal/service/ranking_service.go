@@ -43,9 +43,7 @@ func calcMonthRange(year, month int) (time.Time, time.Time, error) {
 
 	loc, _ := time.LoadLocation("Asia/Tokyo")
 	from := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, loc)
-	fmt.Println("from", from)
 	to := from.AddDate(0, 1, 0)
-	fmt.Println("to", to)
 	return from, to, nil
 }
 
