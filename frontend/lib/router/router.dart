@@ -3,6 +3,7 @@ import 'package:frontend/pages/calendar/calendar_page.dart';
 import 'package:frontend/pages/home/home_page.dart';
 import 'package:frontend/pages/login/login_page.dart';
 import 'package:frontend/pages/profile/profile_page.dart';
+import 'package:frontend/pages/ranking/ranking_page.dart';
 import 'package:frontend/pages/signup/signup_page.dart';
 import 'package:frontend/pages/trend/trend_page.dart';
 import 'package:frontend/pages/workout_record/workout_record_page.dart';
@@ -18,7 +19,8 @@ enum Routes {
   calendar(path: '/calendar', name: 'calendar'),
   trends(path: '/trends', name: 'trends'),
   profile(path: '/profile', name: 'profile'),
-  record(path: '/record', name: 'record');
+  record(path: '/record', name: 'record'),
+  ranking(path: '/ranking', name: 'ranking');
 
   const Routes({required this.path, required this.name});
 
@@ -34,6 +36,8 @@ String _titleFor(int index) {
       return 'カレンダー';
     case 2:
       return '記録の推移';
+    case 3:
+      return 'ランキング';
     default:
       return '筋トレ日記';
   }
@@ -47,6 +51,8 @@ int _indexFor(String loc) {
       return 1;
     case '/trends':
       return 2;
+    case '/ranking':
+      return 3;
     default:
       return 0;
   }
@@ -122,6 +128,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 bottomNavigationBar: isAuthRoute
                     ? null
                     : BottomNavigationBar(
+                        type: BottomNavigationBarType.fixed,
                         currentIndex: currentIndex,
                         onTap: (i) {
                           switch (i) {
@@ -133,6 +140,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                               break;
                             case 2:
                               context.go(Routes.trends.path);
+                              break;
+                            case 3:
+                              context.go(Routes.ranking.path);
                               break;
                           }
                         },
@@ -148,6 +158,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                           BottomNavigationBarItem(
                             icon: Icon(Icons.show_chart),
                             label: '記録の推移',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.leaderboard),
+                            label: 'ランキング',
                           ),
                         ],
                       ),
@@ -186,6 +200,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: Routes.profile.path,
             pageBuilder: (_, __) =>
                 const NoTransitionPage(child: ProfilePage()),
+          ),
+          GoRoute(
+            path: Routes.ranking.path,
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: RankingPage()),
           ),
         ],
       ),
