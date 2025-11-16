@@ -17,11 +17,12 @@ type RankingHandler interface {
 }
 
 type rankingHandler struct {
-	svc service.RankingService
+	svc   service.RankingService
+	cache *service.RankingCache
 }
 
-func NewRankingHandler(svc service.RankingService) RankingHandler {
-	return &rankingHandler{svc: svc}
+func NewRankingHandler(svc service.RankingService, cache *service.RankingCache) RankingHandler {
+	return &rankingHandler{svc: svc, cache: cache}
 }
 
 func (h *rankingHandler) MonthlyGymDays(c echo.Context) error {
@@ -36,6 +37,8 @@ func (h *rankingHandler) MonthlyGymDays(c echo.Context) error {
 	if err != nil {
 		return httpx.Internal("ジム日数ランキングの取得に失敗しました", err)
 	}
+
+	h.cache.SetGymDays(list)
 
 	slog.InfoContext(
 		ctx, "monthly_gym_days_ranking_fetched",

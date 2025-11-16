@@ -42,7 +42,8 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 
 	rankingRepo := repository.NewRankingRepository(conn)
 	rankingSvc := service.NewRankingService(rankingRepo)
-	rankingHandler := handler.NewRankingHandler(rankingSvc)
+	rankingCache := service.NewRankingCache()
+	rankingHandler := handler.NewRankingHandler(rankingSvc, rankingCache)
 
 	authRequired.GET("/exercises", exHandler.List)
 	authRequired.POST("/training_records", workoutHandler.CreateWorkoutRecord)
