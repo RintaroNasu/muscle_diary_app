@@ -30,3 +30,22 @@ func TestRankingCache_SetAndGetGymDays(t *testing.T) {
 	require.Equal(t, int64(3), gotData2[0].TotalTrainingDays)
 	require.False(t, gotTime2.IsZero())
 }
+
+func TestRankingCache_GetGymDays_ReturnsCopy(t *testing.T) {
+	cache := NewRankingCache()
+
+	orig := []GymDaysDTO{
+		{UserID: 1, Email: "a@example.com", TotalTrainingDays: 3},
+	}
+	cache.SetGymDays(orig)
+
+	got1, _ := cache.GetGymDays()
+	require.Len(t, got1, 1)
+	require.Equal(t, uint(1), got1[0].UserID)
+
+	got1[0].Email = "modified@example.com"
+
+	got2, _ := cache.GetGymDays()
+
+	require.Equal(t, "a@example.com", got2[0].Email)
+}
