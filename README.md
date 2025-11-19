@@ -10,7 +10,7 @@
 1. **筋トレの回数を記録機能**: 種目・重量・回数・日付を登録<br>
 2. **カレンダー記録表示機能**: 記録がある日にドット表示し、日付をタップすると当日の記録一覧が出ます。<br>
 3. **グラフ記録表示機能**: 期間を指定して回数・重量などの推移を折れ線／棒グラフで可視化します。<br>
-
+4. **ランキング表示機能**: 月間のジム日数ランキングを可視化して、みんなのモチベーションの向上を計ります。<br>
 ---
 
 ## デモ画像
@@ -32,21 +32,27 @@
     <td><img width="500" alt="image" src="https://github.com/user-attachments/assets/92f17f8a-924f-4c1f-befa-c45ad915d18f" /></td>
     <td><img width="500" alt="image" src="https://github.com/user-attachments/assets/2d65ade8-4998-4631-91e0-4edd1ff78a55" /></td>
   </tr>
-　<tr>
+  <tr>
     <th>カレンダー表示画面</th>
     <th>記録編集モーダル</th>
   </tr>
   <tr>
     <td><img width="500" alt="image" src="https://github.com/user-attachments/assets/dcfe3254-8a5a-4fa4-ab8e-246d0bf6d858" /></td>
     <td><img width="500" alt="image" src="https://github.com/user-attachments/assets/371a14a5-75ac-465a-89a9-5e4fc04988d7" /></td>
-</tr>
-<tr>
+  </tr>
+  <tr>
     <th>グラフ表示画面</th>
     <th>プロフィール画面</th>
   </tr>
   <tr>
     <td><img width="500" height="700" alt="image" src="https://github.com/user-attachments/assets/af594c33-252e-45a1-b3f4-159bdd749e2b" /></td>
     <td><img width="500" height="700" alt="image" src="https://github.com/user-attachments/assets/63cceed7-6e28-4e16-996c-137a9e12a3af" /></td>
+  </tr>
+  <tr>
+    <th>ランキング画面</th>
+  </tr>
+  <tr>
+    <td><img width="500" height="700" alt="image" src="https://github.com/user-attachments/assets/f1165d89-e130-42bf-accf-1ee5ee084adf" /></td>
   </tr>
 </table>
 
