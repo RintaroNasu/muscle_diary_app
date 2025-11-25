@@ -37,6 +37,11 @@ func main() {
 		e.Logger.Fatal("Failed to migrate database: ", err)
 	}
 
+	// seedの追加
+	if err := db.Seed(conn); err != nil {
+		e.Logger.Fatal("Failed to seed database: ", err)
+	}
+
 	// ルーティング
 	routes.Register(e, conn)
 
