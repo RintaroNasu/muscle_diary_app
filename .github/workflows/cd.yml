@@ -27,7 +27,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE=${{secrets.GCP_REGION}}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/muscle-diary-backend/muscle-diary-backend:latest
-          docker build -t $IMAGE .
+          docker build -t $IMAGE ./backend
           docker push $IMAGE
 
       - name: Deploy to Cloud Run
