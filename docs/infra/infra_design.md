@@ -40,21 +40,11 @@ GCP 上のインフラ構成についてまとめたものである。
 
 ## 5. デプロイフロー
 
-### 5-1. 手動デプロイ（初期）
-
-1. Go アプリの Docker イメージビルド
-2. Artifact Registry へ push
-3. `gcloud run deploy` コマンドで Cloud Run サービスを更新
-4. 動作確認（ヘルスチェック用エンドポイント / 本番アプリからのアクセス）
-
-### 5-2. 将来の自動デプロイ（構想）
-
 - GitHub Actions などを用いて、
   - `main` ブランチにマージされたら自動で
     - Docker イメージビルド
     - Artifact Registry へ push
     - Cloud Run へデプロイ
-- 上記は、初期構築後に段階的に導入する。
 
 ---
 
