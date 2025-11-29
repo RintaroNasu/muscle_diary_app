@@ -82,19 +82,31 @@
 
 ### インフラ
 
+・**[Google Cloud Platform](https://cloud.google.com/)**: Googleが提供するクラウドコンピューティングサービス<br>
+・**[Neon](https://neon.com/)**: サーバーレスで自動スケーリング可能なクラウドデータベースサービス<br>
 ・**[Docker](https://docs.docker.com/)**: コンテナ化プラットフォームで環境構築を効率化<br>
+
+
+### アーキテクチャ概要
+
+バックエンドは GitHub Actions から Docker イメージを Artifact Registry に push し、
+Cloud Run にデプロイしています。データベースは Neon を利用しています。
+
+<img width="990" height="416" alt="image" src="https://github.com/user-attachments/assets/cc0da8f0-56d6-4432-8ab0-bd3a2b1decac" />
+
+より詳細な構成は [`docs/infra/infra_design.md`](docs/infra/infra_design.md) を参照
 
 ---
 
 ## 本番環境
 
-### **フロントエンド**
+### **フロントエンド(デプロイ準備中)**
 
-・ デプロイ準備中
+・ フロントはローカル環境からでも Cloud Run の本番 API を直接叩けます。
 
-### **バックエンド**
-
-・ デプロイ準備中
+### **バックエンド(公開済)**
+##### API ベース URL
+- https://muscle-diary-backend-259090965328.asia-northeast1.run.app
 
 ---
 
@@ -104,7 +116,7 @@
 
 1. リポジトリをクローン
 
-```
+```bash
 git clone https://github.com/RintaroNasu/muscle_diary_app.git
 ```
 
@@ -112,20 +124,20 @@ git clone https://github.com/RintaroNasu/muscle_diary_app.git
 
 2. フロントエンドディレクトリへ移動
 
-```
+```bash
 cd frontend
 ```
 
 3. 依存関係を取得
 
-```
+```bash
 fvm install        # .fvmrc のバージョンを取得
 fvm flutter pub get
 ```
 
 4. サーバー立ち上げ
 
-```
+```bash
 flutter devices #接続可能デバイスを確認
 flutter run -d 〇〇
 ```
@@ -134,13 +146,13 @@ flutter run -d 〇〇
 
 5. バックエンドディレクトリへ移動
 
-```
+```bash
 cd backend
 ```
 
 6. ルートディレクトリに .env ファイルを作成し、以下の内容を追加
 
-```
+```bash
 POSTGRES_USER="your_postgres_user"
 POSTGRES_PASSWORD="your_postgres_password"
 POSTGRES_DB="muscle_diary"
@@ -152,24 +164,27 @@ JWT_SECRET="your_jwt_secret"
 
 7. 依存関係の取得
 
-```
+```bash
 go mod tidy
 ```
 
 8. Docker コンテナを起動
 
-```
+```bash
 docker compose up -d
 ```
 
 9. バックエンドサーバーを起動
 
-```
+```bash
 go run cmd/server/main.go
 ```
 
-10. 別ターミナルで種目を事前に挿入する
+## フロントのローカル環境で本番 API を使用する方法
+通常はローカル API が使われますが、以下のように --dart-define をつけて起動することで
+本番 API に切り替えて起動できます。
 
-```
-make seed
+```bash
+flutter run \
+  --dart-define=API_BASE_URL=https://muscle-diary-backend-259090965328.asia-northeast1.run.app
 ```
