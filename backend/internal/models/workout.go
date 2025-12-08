@@ -14,6 +14,8 @@ type WorkoutRecord struct {
 	TrainedOn  time.Time    `gorm:"type:date;not null;index"`
 	Sets       []WorkoutSet `gorm:"constraint:OnDelete:CASCADE"`
 	Exercise   Exercise     `gorm:"foreignKey:ExerciseID"`
+	IsPublic   bool         `gorm:"default:false"`
+	Comment    string       `gorm:"type:text"`
 }
 
 type WorkoutSet struct {

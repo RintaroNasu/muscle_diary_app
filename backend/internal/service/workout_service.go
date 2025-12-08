@@ -10,7 +10,7 @@ import (
 )
 
 type WorkoutService interface {
-	CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
+	CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData, isPublic bool, comment string) (*models.WorkoutRecord, error)
 	GetDailyRecords(userID uint, day time.Time) ([]models.WorkoutRecord, error)
 	GetMonthRecordDays(userID uint, year int, month int) ([]time.Time, error)
 	UpdateWorkoutRecord(userID uint, recordID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error)
@@ -22,6 +22,7 @@ type WorkoutSetData struct {
 	SetNo          int
 	Reps           int
 	ExerciseWeight float64
+	IsPublic       bool
 }
 
 type workoutService struct {
@@ -41,7 +42,7 @@ func NewWorkoutService(repo repository.WorkoutRepository) WorkoutService {
 	return &workoutService{repo: repo}
 }
 
-func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData) (*models.WorkoutRecord, error) {
+func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []WorkoutSetData, isPublic bool, comment string) (*models.WorkoutRecord, error) {
 	if len(sets) == 0 {
 		return nil, ErrNoSets
 	}
@@ -57,6 +58,8 @@ func (s *workoutService) CreateWorkoutRecord(userID uint, bodyWeight float64, ex
 		ExerciseID: exerciseID,
 		BodyWeight: bodyWeight,
 		TrainedOn:  trainedOn,
+		IsPublic:   isPublic,
+		Comment:    comment,
 	}
 
 	for _, setData := range sets {

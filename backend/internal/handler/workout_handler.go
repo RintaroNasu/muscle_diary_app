@@ -31,6 +31,8 @@ type CreateWorkoutRecordRequest struct {
 	ExerciseID uint                `json:"exercise_id"`
 	Sets       []WorkoutSetRequest `json:"sets"`
 	TrainedOn  string              `json:"trained_on"`
+	IsPublic   bool                `json:"is_public"`
+	Comment    string              `json:"comment"`
 }
 
 type WorkoutSetRequest struct {
@@ -91,7 +93,7 @@ func (h *workoutHandler) CreateWorkoutRecord(c echo.Context) error {
 		})
 	}
 
-	record, err := h.svc.CreateWorkoutRecord(userID, req.BodyWeight, req.ExerciseID, trainedOn, sets)
+	record, err := h.svc.CreateWorkoutRecord(userID, req.BodyWeight, req.ExerciseID, trainedOn, sets, req.IsPublic, req.Comment)
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoSets),

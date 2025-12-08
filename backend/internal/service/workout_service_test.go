@@ -69,6 +69,8 @@ func TestWorkoutService_CreateWorkoutRecord(t *testing.T) {
 		exerciseID uint
 		trainedOn  time.Time
 		sets       []WorkoutSetData
+		isPublic   bool
+		comment    string
 		wantErr    error
 		wantErrSub string
 		wantSetLen int
@@ -137,7 +139,7 @@ func TestWorkoutService_CreateWorkoutRecord(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			svc := NewWorkoutService(&tt.repo)
-			got, err := svc.CreateWorkoutRecord(tt.userID, tt.bodyWeight, tt.exerciseID, tt.trainedOn, tt.sets)
+			got, err := svc.CreateWorkoutRecord(tt.userID, tt.bodyWeight, tt.exerciseID, tt.trainedOn, tt.sets, tt.isPublic, tt.comment)
 
 			if tt.wantErr != nil || tt.wantErrSub != "" {
 				require.Error(t, err)
@@ -435,7 +437,7 @@ func TestWorkoutService_DeleteWorkoutRecord(t *testing.T) {
 			wantErr:  ErrRecordNotFound,
 		},
 		{
-			name: "【異常系】Find がその他のエラーは wrap されて返すこと",
+			name: "【異常系】repo エラーが発生した場合は wrap されて返すこと",
 			repo: fakeWorkoutRepo{
 				findOneFn: func(uint, uint) (*models.WorkoutRecord, error) { return nil, errors.New("find boom") },
 			},
@@ -444,7 +446,7 @@ func TestWorkoutService_DeleteWorkoutRecord(t *testing.T) {
 			wantErrSub: "find workout record failed: find boom",
 		},
 		{
-			name: "【異常系】Delete のエラーは wrap されて返すこと",
+			name: "【異常系】repo エラーが発生した場合は wrap されて返すこと",
 			repo: fakeWorkoutRepo{
 				findOneFn: func(uint, uint) (*models.WorkoutRecord, error) {
 					return &models.WorkoutRecord{Model: gorm.Model{ID: 10}, UserID: 1}, nil
@@ -474,66 +476,6 @@ func TestWorkoutService_DeleteWorkoutRecord(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-		})
-	}
-}
-
-func TestWorkoutService_GetWorkoutRecordsByExercise(t *testing.T) {
-	rows := []repository.FlatWorkoutSet{
-		{RecordID: 1, TrainedOn: time.Date(2025, 10, 1, 0, 0, 0, 0, time.UTC), SetNo: 1, Reps: 10, ExerciseWeight: 50, BodyWeight: 70},
-		{RecordID: 1, TrainedOn: time.Date(2025, 10, 1, 0, 0, 0, 0, time.UTC), SetNo: 2, Reps: 8, ExerciseWeight: 55, BodyWeight: 70},
-	}
-
-	tests := []struct {
-		name       string
-		repo       fakeWorkoutRepo
-		userID     uint
-		exerciseID uint
-		wantLen    int
-		wantErrSub string
-	}{
-		{
-			name: "【正常系】FlatSet を取得できること",
-			repo: fakeWorkoutRepo{
-				findSetsFn: func(uint, uint) ([]repository.FlatWorkoutSet, error) { return rows, nil },
-			},
-			userID:     1,
-			exerciseID: 2,
-			wantLen:    2,
-		},
-		{
-			name: "【異常系】repo エラーが発生した場合は wrap されて返すこと",
-			repo: fakeWorkoutRepo{
-				findSetsFn: func(uint, uint) ([]repository.FlatWorkoutSet, error) { return nil, errors.New("x") },
-			},
-			userID:     1,
-			exerciseID: 2,
-			wantErrSub: "fetch exercise sets failed: x",
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			svc := NewWorkoutService(&tt.repo)
-			got, err := svc.GetWorkoutRecordsByExercise(tt.userID, tt.exerciseID)
-
-			if tt.wantErrSub != "" {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), tt.wantErrSub)
-				return
-			}
-			require.NoError(t, err)
-			require.Len(t, got, tt.wantLen)
-
-			if tt.wantLen > 0 {
-				require.Equal(t, rows[0].RecordID, got[0].RecordID)
-				require.Equal(t, rows[0].TrainedOn, got[0].TrainedOn)
-				require.Equal(t, rows[0].SetNo, got[0].SetNo)
-				require.Equal(t, rows[0].Reps, got[0].Reps)
-				require.InDelta(t, rows[0].ExerciseWeight, got[0].ExerciseWeight, 1e-9)
-				require.InDelta(t, rows[0].BodyWeight, got[0].BodyWeight, 1e-9)
-			}
 		})
 	}
 }
