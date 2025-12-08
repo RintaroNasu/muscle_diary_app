@@ -5,7 +5,6 @@ import (
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
-	"gorm.io/gorm"
 )
 
 type ProfileService interface {
@@ -24,7 +23,7 @@ func NewProfileService(repo repository.ProfileRepository) ProfileService {
 func (s *profileService) GetProfile(userID uint) (*models.User, error) {
 	user, err := s.repo.GetProfile(userID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, repository.ErrNotFound) {
 			return nil, ErrUserNotFound
 		}
 		return nil, err
@@ -34,9 +33,10 @@ func (s *profileService) GetProfile(userID uint) (*models.User, error) {
 
 func (s *profileService) UpdateProfile(userID uint, height *float64, goalWeight *float64) (*models.User, error) {
 	if err := s.repo.UpdateProfile(userID, height, goalWeight); err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
-
-	// 更新後の最新データを返す
 	return s.GetProfile(userID)
 }

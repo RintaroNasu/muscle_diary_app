@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
 	"gorm.io/gorm"
 )
@@ -21,6 +23,9 @@ func NewProfileRepository(db *gorm.DB) ProfileRepository {
 func (r *profileRepository) GetProfile(userID uint) (*models.User, error) {
 	var user models.User
 	if err := r.db.First(&user, userID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return &user, nil
@@ -31,5 +36,11 @@ func (r *profileRepository) UpdateProfile(userID uint, height *float64, goalWeig
 		"height":      height,
 		"goal_weight": goalWeight,
 	}
-	return r.db.Model(&models.User{}).Where("id = ?", userID).Updates(updates).Error
+	if err := r.db.Model(&models.User{}).Where("id = ?", userID).Updates(updates).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	return nil
 }

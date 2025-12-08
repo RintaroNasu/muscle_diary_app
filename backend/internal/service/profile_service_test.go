@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/models"
+	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
 	"github.com/RintaroNasu/muscle_diary_app/utils"
 	"github.com/stretchr/testify/require"
-	"gorm.io/gorm"
 )
 
 type fakeProfileRepo struct {
@@ -50,7 +50,7 @@ func TestProfileService_GetProfile(t *testing.T) {
 			name: "【異常系】存在しないユーザーの場合は ErrUserNotFound を返すこと",
 			mockRepo: fakeProfileRepo{
 				getFunc: func(userID uint) (*models.User, error) {
-					return nil, gorm.ErrRecordNotFound
+					return nil, repository.ErrNotFound
 				},
 			},
 			userID:  99,
