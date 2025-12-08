@@ -36,11 +36,15 @@ func (r *profileRepository) UpdateProfile(userID uint, height *float64, goalWeig
 		"height":      height,
 		"goal_weight": goalWeight,
 	}
-	if err := r.db.Model(&models.User{}).Where("id = ?", userID).Updates(updates).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrNotFound
-		}
-		return err
+	result := r.db.Model(&models.User{}).Where("id = ?", userID).Updates(updates)
+
+	if result.Error != nil {
+		return result.Error
 	}
+
+	if result.RowsAffected == 0 {
+		return ErrNotFound
+	}
+
 	return nil
 }

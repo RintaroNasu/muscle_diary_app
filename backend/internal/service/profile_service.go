@@ -38,5 +38,6 @@ func (s *profileService) UpdateProfile(userID uint, height *float64, goalWeight 
 		}
 		return nil, err
 	}
+
 	return s.GetProfile(userID)
 }
