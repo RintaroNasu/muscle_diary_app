@@ -45,6 +45,10 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	rankingCache := service.NewRankingCache()
 	rankingHandler := handler.NewRankingHandler(rankingSvc, rankingCache)
 
+	timelineRepo := repository.NewTimelineRepository(conn)
+	timelineSvc := service.NewTimelineService(timelineRepo)
+	timelineHandler := handler.NewTimelineHandler(timelineSvc)
+
 	authRequired.GET("/exercises", exHandler.List)
 	authRequired.POST("/training_records", workoutHandler.CreateWorkoutRecord)
 	authRequired.GET("/training_records/date", workoutHandler.GetWorkoutRecordsByDate)
@@ -56,4 +60,5 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	authRequired.PUT("/profile", profileHandler.UpdateProfile)
 	authRequired.GET("/home/summary", summaryHandler.GetHomeSummary)
 	authRequired.GET("/ranking/monthly_gym_days", rankingHandler.MonthlyGymDays)
+	authRequired.GET("/timeline", timelineHandler.GetTimeline)
 }
