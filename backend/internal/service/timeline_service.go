@@ -1,11 +1,23 @@
 package service
 
 import (
+	"time"
+
 	"github.com/RintaroNasu/muscle_diary_app/internal/repository"
 )
 
 type TimelineService interface {
-	GetTimeline() ([]repository.TimelineItem, error)
+	GetTimeline() ([]TimelineItem, error)
+}
+
+type TimelineItem struct {
+	RecordID     uint
+	UserID       uint
+	UserEmail    string
+	ExerciseName string
+	BodyWeight   float64
+	TrainedOn    time.Time
+	Comment      string
 }
 
 type timelineService struct {
@@ -16,6 +28,23 @@ func NewTimelineService(repo repository.TimelineRepository) TimelineService {
 	return &timelineService{repo: repo}
 }
 
-func (s *timelineService) GetTimeline() ([]repository.TimelineItem, error) {
-	return s.repo.FindPublicRecords()
+func (s *timelineService) GetTimeline() ([]TimelineItem, error) {
+	rows, err := s.repo.FindPublicRecords()
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]TimelineItem, 0, len(rows))
+	for _, it := range rows {
+		out = append(out, TimelineItem{
+			RecordID:     it.RecordID,
+			UserID:       it.UserID,
+			UserEmail:    it.UserEmail,
+			ExerciseName: it.ExerciseName,
+			BodyWeight:   it.BodyWeight,
+			TrainedOn:    it.TrainedOn,
+			Comment:      it.Comment,
+		})
+	}
+	return out, nil
 }
