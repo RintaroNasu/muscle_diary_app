@@ -26,7 +26,7 @@ func newEchoForTest() *echo.Echo {
 }
 
 type mockWorkoutService struct {
-	CreateWorkoutRecordFunc       func(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []service.WorkoutSetData) (*models.WorkoutRecord, error)
+	CreateWorkoutRecordFunc       func(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []service.WorkoutSetData, isPublic bool, comment string) (*models.WorkoutRecord, error)
 	GetDailyRecordsFunc           func(userID uint, day time.Time) ([]models.WorkoutRecord, error)
 	GetMonthRecordDaysFunc        func(userID uint, year int, month int) ([]time.Time, error)
 	UpdateWorkoutRecordFunc       func(userID uint, recordID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []service.WorkoutSetData) (*models.WorkoutRecord, error)
@@ -34,8 +34,8 @@ type mockWorkoutService struct {
 	GetWorkoutRecordsByExerciseFn func(userID uint, exerciseID uint) ([]service.FlatSet, error)
 }
 
-func (m *mockWorkoutService) CreateWorkoutRecord(a uint, b float64, c uint, d time.Time, e []service.WorkoutSetData) (*models.WorkoutRecord, error) {
-	return m.CreateWorkoutRecordFunc(a, b, c, d, e)
+func (m *mockWorkoutService) CreateWorkoutRecord(a uint, b float64, c uint, d time.Time, e []service.WorkoutSetData, f bool, g string) (*models.WorkoutRecord, error) {
+	return m.CreateWorkoutRecordFunc(a, b, c, d, e, f, g)
 }
 func (m *mockWorkoutService) GetDailyRecords(a uint, b time.Time) ([]models.WorkoutRecord, error) {
 	return m.GetDailyRecordsFunc(a, b)
@@ -65,7 +65,7 @@ func TestWorkoutHandler_CreateWorkoutRecord(t *testing.T) {
 			name: "【正常系】レコードとセットを作成できること",
 			body: `{"body_weight":70.5,"exercise_id":2,"trained_on":"2025-10-01","sets":[{"set":1,"reps":10,"exercise_weight":50}]}`,
 			mock: &mockWorkoutService{
-				CreateWorkoutRecordFunc: func(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []service.WorkoutSetData) (*models.WorkoutRecord, error) {
+				CreateWorkoutRecordFunc: func(userID uint, bodyWeight float64, exerciseID uint, trainedOn time.Time, sets []service.WorkoutSetData, isPublic bool, comment string) (*models.WorkoutRecord, error) {
 					return &models.WorkoutRecord{Model: gorm.Model{ID: 123}}, nil
 				},
 			},
@@ -76,7 +76,7 @@ func TestWorkoutHandler_CreateWorkoutRecord(t *testing.T) {
 			name: "【異常系】リクエストの形式が不正な場合は InvalidBody エラーを返すこと",
 			body: `{"trained_on":123,"sets":[]}`,
 			mock: &mockWorkoutService{
-				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData) (*models.WorkoutRecord, error) {
+				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData, bool, string) (*models.WorkoutRecord, error) {
 					return nil, nil
 				},
 			},
@@ -87,7 +87,7 @@ func TestWorkoutHandler_CreateWorkoutRecord(t *testing.T) {
 			name: "【異常系】日付の形式が不正な場合は InvalidDate エラーを返すこと",
 			body: `{"body_weight":70,"exercise_id":1,"trained_on":"2025/10/01","sets":[{"set":1,"reps":10,"exercise_weight":50}]}`,
 			mock: &mockWorkoutService{
-				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData) (*models.WorkoutRecord, error) {
+				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData, bool, string) (*models.WorkoutRecord, error) {
 					return nil, nil
 				},
 			},
@@ -98,7 +98,7 @@ func TestWorkoutHandler_CreateWorkoutRecord(t *testing.T) {
 			name: "【異常系】セットが空の場合は ErrNoSets を返すこと",
 			body: `{"body_weight":70,"exercise_id":1,"trained_on":"2025-10-01","sets":[]}`,
 			mock: &mockWorkoutService{
-				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData) (*models.WorkoutRecord, error) {
+				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData, bool, string) (*models.WorkoutRecord, error) {
 					return nil, service.ErrNoSets
 				},
 			},
@@ -109,7 +109,7 @@ func TestWorkoutHandler_CreateWorkoutRecord(t *testing.T) {
 			name: "【異常系】指定の種目が見つからない場合は ExerciseNotFound エラーを返すこと",
 			body: `{"body_weight":70,"exercise_id":999,"trained_on":"2025-10-01","sets":[{"set":1,"reps":10,"exercise_weight":50}]}`,
 			mock: &mockWorkoutService{
-				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData) (*models.WorkoutRecord, error) {
+				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData, bool, string) (*models.WorkoutRecord, error) {
 					return nil, service.ErrExerciseNotFound
 				},
 			},
@@ -120,7 +120,7 @@ func TestWorkoutHandler_CreateWorkoutRecord(t *testing.T) {
 			name: "【異常系】システムエラーが発生した場合は InternalError エラーを返すこと",
 			body: `{"body_weight":70,"exercise_id":1,"trained_on":"2025-10-01","sets":[{"set":1,"reps":10,"exercise_weight":50}]}`,
 			mock: &mockWorkoutService{
-				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData) (*models.WorkoutRecord, error) {
+				CreateWorkoutRecordFunc: func(uint, float64, uint, time.Time, []service.WorkoutSetData, bool, string) (*models.WorkoutRecord, error) {
 					return nil, errors.New("db down")
 				},
 			},

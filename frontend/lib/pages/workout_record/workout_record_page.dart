@@ -18,8 +18,10 @@ class WorkoutRecordPage extends HookConsumerWidget {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final weightController = useTextEditingController();
     final dateController = useTextEditingController();
+    final commentController = useTextEditingController();
 
     final selectedExercise = useState<Exercise?>(null);
+    final isPublic = useState<bool>(false);
 
     final formState = ref.watch(recordFormControllerProvider('create'));
     final formCtl = ref.read(recordFormControllerProvider('create').notifier);
@@ -29,6 +31,7 @@ class WorkoutRecordPage extends HookConsumerWidget {
 
     useListenable(weightController);
     useListenable(dateController);
+    useListenable(commentController);
 
     ref.listen(exercisesProvider, (prev, next) {
       next.when(
@@ -97,6 +100,29 @@ class WorkoutRecordPage extends HookConsumerWidget {
                   onRemoveSet: formCtl.removeSet,
                   isSubmitting: pageState.isSubmitting,
                 ),
+                const SizedBox(height: 16),
+                CheckboxListTile(
+                  value: isPublic.value,
+                  onChanged: pageState.isSubmitting
+                      ? null
+                      : (v) {
+                          if (v == null) return;
+                          isPublic.value = v;
+                        },
+                  title: const Text('タイムラインに公開する'),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: commentController,
+                  enabled: !pageState.isSubmitting,
+                  decoration: const InputDecoration(
+                    labelText: '一言コメント（任意）',
+                    hintText: '今日は胸トレ。フォーム重視で！',
+                  ),
+                ),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: pageState.isSubmitting
                       ? null
@@ -110,6 +136,8 @@ class WorkoutRecordPage extends HookConsumerWidget {
                             ),
                             exerciseId: selectedExercise.value!.id,
                             trainedOn: dateController.text,
+                            isPublic: isPublic.value,
+                            comment: commentController.text.trim(),
                             onSuccess: () {
                               context.go('/');
                             },

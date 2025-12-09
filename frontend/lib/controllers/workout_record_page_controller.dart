@@ -42,6 +42,8 @@ class WorkoutRecordPageController
     required double bodyWeight,
     required int exerciseId,
     required String trainedOn,
+    required bool isPublic,
+    required String comment,
     VoidCallback? onSuccess,
   }) async {
     try {
@@ -60,6 +62,8 @@ class WorkoutRecordPageController
         'exercise_id': exerciseId,
         'sets': setsPayload,
         'trained_on': trainedOn,
+        'is_public': isPublic,
+        'comment': comment,
       };
       final api = ref.read(workoutRecordsApiProvider);
       await api.createWorkoutRecord(body);

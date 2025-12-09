@@ -5,6 +5,7 @@ import 'package:frontend/pages/login/login_page.dart';
 import 'package:frontend/pages/profile/profile_page.dart';
 import 'package:frontend/pages/ranking/ranking_page.dart';
 import 'package:frontend/pages/signup/signup_page.dart';
+import 'package:frontend/pages/timeline/timeline_page.dart';
 import 'package:frontend/pages/trend/trend_page.dart';
 import 'package:frontend/pages/workout_record/workout_record_page.dart';
 import 'package:frontend/controllers/common/auth_controller.dart';
@@ -20,7 +21,8 @@ enum Routes {
   trends(path: '/trends', name: 'trends'),
   profile(path: '/profile', name: 'profile'),
   record(path: '/record', name: 'record'),
-  ranking(path: '/ranking', name: 'ranking');
+  ranking(path: '/ranking', name: 'ranking'),
+  timeline(path: '/timeline', name: 'timeline');
 
   const Routes({required this.path, required this.name});
 
@@ -38,6 +40,8 @@ String _titleFor(int index) {
       return '記録の推移';
     case 3:
       return 'ランキング';
+    case 4:
+      return 'タイムライン';
     default:
       return '筋トレ日記';
   }
@@ -53,6 +57,8 @@ int _indexFor(String loc) {
       return 2;
     case '/ranking':
       return 3;
+    case '/timeline':
+      return 4;
     default:
       return 0;
   }
@@ -144,6 +150,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                             case 3:
                               context.go(Routes.ranking.path);
                               break;
+                            case 4:
+                              context.go(Routes.timeline.path);
+                              break;
                           }
                         },
                         items: const [
@@ -162,6 +171,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                           BottomNavigationBarItem(
                             icon: Icon(Icons.leaderboard),
                             label: 'ランキング',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.timeline),
+                            label: 'タイムライン',
                           ),
                         ],
                       ),
@@ -205,6 +218,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: Routes.ranking.path,
             pageBuilder: (_, __) =>
                 const NoTransitionPage(child: RankingPage()),
+          ),
+          GoRoute(
+            path: Routes.timeline.path,
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: TimelinePage()),
           ),
         ],
       ),
