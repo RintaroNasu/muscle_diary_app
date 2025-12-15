@@ -30,6 +30,20 @@ class TimelineApi {
 
     throw Exception('タイムライン取得に失敗しました: ${res.statusCode}');
   }
+
+  Future<void> like(int recordId) async {
+    final res = await _api.post('/timeline/$recordId/like');
+    if (res.statusCode == 200) return;
+    if (res.statusCode == 401) throw Exception('認証エラー: ログインし直してください');
+    throw Exception('いいねに失敗しました: ${res.statusCode}');
+  }
+
+  Future<void> unlike(int recordId) async {
+    final res = await _api.delete('/timeline/$recordId/like');
+    if (res.statusCode == 200) return;
+    if (res.statusCode == 401) throw Exception('認証エラー: ログインし直してください');
+    throw Exception('いいね解除に失敗しました: ${res.statusCode}');
+  }
 }
 
 final timelineApiProvider = Provider<TimelineApi>((ref) {
