@@ -14,10 +14,11 @@ type TimelineItem struct {
 	BodyWeight   float64
 	TrainedOn    time.Time
 	Comment      string
+	LikedByMe    bool
 }
 
 type TimelineRepository interface {
-	FindPublicRecords() ([]TimelineItem, error)
+	FindPublicRecords(userID uint) ([]TimelineItem, error)
 }
 
 type timelineRepository struct {
@@ -28,7 +29,7 @@ func NewTimelineRepository(db *gorm.DB) TimelineRepository {
 	return &timelineRepository{db: db}
 }
 
-func (r *timelineRepository) FindPublicRecords() ([]TimelineItem, error) {
+func (r *timelineRepository) FindPublicRecords(userID uint) ([]TimelineItem, error) {
 	var rows []TimelineItem
 
 	err := r.db.
@@ -40,8 +41,14 @@ func (r *timelineRepository) FindPublicRecords() ([]TimelineItem, error) {
 			exercises.name              AS exercise_name,
 			workout_records.body_weight AS body_weight,
 			workout_records.trained_on  AS trained_on,
-			workout_records.comment     AS comment
-		`).
+			workout_records.comment     AS comment,
+			EXISTS (
+					SELECT 1
+					FROM workout_likes wl
+					WHERE wl.record_id = workout_records.id
+						AND wl.user_id = ?
+				) AS liked_by_me
+			`, userID).
 		Joins("JOIN users ON users.id = workout_records.user_id").
 		Joins("JOIN exercises ON exercises.id = workout_records.exercise_id").
 		Where("workout_records.is_public = ?", true).

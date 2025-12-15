@@ -10,15 +10,15 @@ import (
 )
 
 type fakeTimelineRepo struct {
-	findFn func() ([]repository.TimelineItem, error)
+	findFn func(userID uint) ([]repository.TimelineItem, error)
 }
 
-func (f *fakeTimelineRepo) FindPublicRecords() ([]repository.TimelineItem, error) {
-	return f.findFn()
+func (f *fakeTimelineRepo) FindPublicRecords(userID uint) ([]repository.TimelineItem, error) {
+	return f.findFn(userID)
 }
 func TestNewTimelineService(t *testing.T) {
 	repo := &fakeTimelineRepo{
-		findFn: func() ([]repository.TimelineItem, error) {
+		findFn: func(userID uint) ([]repository.TimelineItem, error) {
 			return nil, nil
 		},
 	}
@@ -42,7 +42,7 @@ func TestTimelineService_GetTimeline(t *testing.T) {
 		{
 			name: "【正常系】公開記録が1件以上返ってくる場合に値をマッピングできること",
 			repo: fakeTimelineRepo{
-				findFn: func() ([]repository.TimelineItem, error) {
+				findFn: func(userID uint) ([]repository.TimelineItem, error) {
 					return []repository.TimelineItem{
 						{
 							RecordID:     1,
@@ -52,6 +52,7 @@ func TestTimelineService_GetTimeline(t *testing.T) {
 							BodyWeight:   70.5,
 							TrainedOn:    now,
 							Comment:      "がんばった",
+							LikedByMe:    false,
 						},
 					}, nil
 				},
@@ -70,7 +71,7 @@ func TestTimelineService_GetTimeline(t *testing.T) {
 		{
 			name: "【正常系】公開記録が0件の場合は空スライスを返すこと",
 			repo: fakeTimelineRepo{
-				findFn: func() ([]repository.TimelineItem, error) {
+				findFn: func(userID uint) ([]repository.TimelineItem, error) {
 					return []repository.TimelineItem{}, nil
 				},
 			},
@@ -80,7 +81,7 @@ func TestTimelineService_GetTimeline(t *testing.T) {
 		{
 			name: "【異常系】リポジトリのエラーをそのまま返すこと",
 			repo: fakeTimelineRepo{
-				findFn: func() ([]repository.TimelineItem, error) {
+				findFn: func(userID uint) ([]repository.TimelineItem, error) {
 					return nil, errors.New("db failed")
 				},
 			},
@@ -93,7 +94,7 @@ func TestTimelineService_GetTimeline(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := NewTimelineService(&tt.repo)
 
-			got, err := svc.GetTimeline()
+			got, err := svc.GetTimeline(1)
 
 			if tt.wantErr != "" {
 				require.Error(t, err)

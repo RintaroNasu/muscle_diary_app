@@ -18,7 +18,7 @@ func newTimelineTestDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	require.NoError(t, err)
 
-	require.NoError(t, db.AutoMigrate(&models.User{}, &models.Exercise{}, &models.WorkoutRecord{}))
+	require.NoError(t, db.AutoMigrate(&models.User{}, &models.Exercise{}, &models.WorkoutRecord{}, &models.WorkoutLike{}))
 
 	return db
 }
@@ -116,7 +116,7 @@ func TestTimelineRepository_FindPublicRecords(t *testing.T) {
 			tt.prepare(db)
 
 			repo := NewTimelineRepository(db)
-			rows, err := repo.FindPublicRecords()
+			rows, err := repo.FindPublicRecords(1)
 
 			if tt.expectError {
 				require.Error(t, err)

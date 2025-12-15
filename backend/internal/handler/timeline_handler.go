@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/RintaroNasu/muscle_diary_app/internal/httpx"
+	"github.com/RintaroNasu/muscle_diary_app/internal/middleware"
 	"github.com/RintaroNasu/muscle_diary_app/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -30,12 +31,14 @@ type TimelineItemResponse struct {
 	BodyWeight   float64 `json:"body_weight"`
 	TrainedOn    string  `json:"trained_on"`
 	Comment      string  `json:"comment"`
+	LikedByMe    bool    `json:"liked_by_me"`
 }
 
 func (h *timelineHandler) GetTimeline(c echo.Context) error {
 	ctx := c.Request().Context()
+	userID := middleware.GetUserID(c)
 
-	items, err := h.svc.GetTimeline()
+	items, err := h.svc.GetTimeline(userID)
 	if err != nil {
 		return httpx.Internal("システムエラーが発生しました", err)
 	}
@@ -52,6 +55,7 @@ func (h *timelineHandler) GetTimeline(c echo.Context) error {
 			BodyWeight:   it.BodyWeight,
 			TrainedOn:    it.TrainedOn.In(loc).Format("2006-01-02"),
 			Comment:      it.Comment,
+			LikedByMe:    it.LikedByMe,
 		})
 	}
 

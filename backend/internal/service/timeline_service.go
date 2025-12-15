@@ -7,7 +7,7 @@ import (
 )
 
 type TimelineService interface {
-	GetTimeline() ([]TimelineItem, error)
+	GetTimeline(userID uint) ([]TimelineItem, error)
 }
 
 type TimelineItem struct {
@@ -18,6 +18,7 @@ type TimelineItem struct {
 	BodyWeight   float64
 	TrainedOn    time.Time
 	Comment      string
+	LikedByMe    bool
 }
 
 type timelineService struct {
@@ -28,8 +29,8 @@ func NewTimelineService(repo repository.TimelineRepository) TimelineService {
 	return &timelineService{repo: repo}
 }
 
-func (s *timelineService) GetTimeline() ([]TimelineItem, error) {
-	rows, err := s.repo.FindPublicRecords()
+func (s *timelineService) GetTimeline(userID uint) ([]TimelineItem, error) {
+	rows, err := s.repo.FindPublicRecords(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +45,7 @@ func (s *timelineService) GetTimeline() ([]TimelineItem, error) {
 			BodyWeight:   it.BodyWeight,
 			TrainedOn:    it.TrainedOn,
 			Comment:      it.Comment,
+			LikedByMe:    it.LikedByMe,
 		})
 	}
 	return out, nil
