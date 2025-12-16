@@ -11,8 +11,9 @@ var (
 
 // Workoutドメインで利用可能
 var (
-	ErrNoSets           = errors.New("no sets")
-	ErrInvalidSetValue  = errors.New("invalid set value")
-	ErrExerciseNotFound = errors.New("exercise not found")
-	ErrRecordNotFound   = errors.New("record not found")
+	ErrNoSets                 = errors.New("no sets")
+	ErrInvalidSetValue        = errors.New("invalid set value")
+	ErrExerciseNotFound       = errors.New("exercise not found")
+	ErrRecordNotFound         = errors.New("record not found")
+	ErrForbiddenPrivateRecord = errors.New("forbidden private record")
 )

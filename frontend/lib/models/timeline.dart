@@ -7,6 +7,7 @@ class TimelineItem {
   final double? bodyWeight;
   final String trainedOn;
   final String? comment;
+  final bool likedByMe;
 
   TimelineItem({
     required this.recordId,
@@ -16,7 +17,21 @@ class TimelineItem {
     this.bodyWeight,
     required this.trainedOn,
     this.comment,
+    required this.likedByMe,
   });
+
+  TimelineItem copyWith({bool? likedByMe}) {
+    return TimelineItem(
+      recordId: recordId,
+      userId: userId,
+      userEmail: userEmail,
+      exerciseName: exerciseName,
+      bodyWeight: bodyWeight,
+      trainedOn: trainedOn,
+      comment: comment,
+      likedByMe: likedByMe ?? this.likedByMe,
+    );
+  }
 
   factory TimelineItem.fromJson(Map<String, dynamic> json) {
     return TimelineItem(
@@ -27,6 +42,7 @@ class TimelineItem {
       bodyWeight: (json['body_weight'] as num?)?.toDouble(),
       trainedOn: json['trained_on'] as String,
       comment: json['comment'] as String?,
+      likedByMe: json['liked_by_me'] as bool,
     );
   }
 }

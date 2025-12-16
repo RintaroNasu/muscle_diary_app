@@ -7,7 +7,22 @@ class TimelinePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final timelineAsync = ref.watch(timelineProvider);
+    ref.listen(timelineControllerProvider, (prev, next) {
+      final msg = next.errorMessage;
+      final prevMsg = prev?.errorMessage;
+
+      if (!context.mounted) return;
+      if (msg != null && msg != prevMsg) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+        );
+        ref.read(timelineControllerProvider.notifier).clearError();
+      }
+    });
+
+    final state = ref.watch(timelineControllerProvider);
+    final timelineAsync = state.timelineAsync;
+    final ctrl = ref.read(timelineControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text('タイムライン')),
@@ -31,7 +46,6 @@ class TimelinePage extends HookConsumerWidget {
             itemBuilder: (context, index) {
               final item = items[index];
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                 child: ListTile(
                   title: Text(
                     item.exerciseName,
@@ -59,6 +73,12 @@ class TimelinePage extends HookConsumerWidget {
                           ),
                         ),
                     ],
+                  ),
+                  trailing: IconButton(
+                    icon: Icon(
+                      item.likedByMe ? Icons.favorite : Icons.favorite_border,
+                    ),
+                    onPressed: () => ctrl.toggleLike(item.recordId),
                   ),
                 ),
               );

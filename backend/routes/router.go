@@ -49,6 +49,10 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	timelineSvc := service.NewTimelineService(timelineRepo)
 	timelineHandler := handler.NewTimelineHandler(timelineSvc)
 
+	workoutLikeRepo := repository.NewWorkoutLikeRepository(conn)
+	workoutLikeSvc := service.NewWorkoutLikeService(workoutLikeRepo)
+	workoutLikeHandler := handler.NewWorkoutLikeHandler(workoutLikeSvc)
+
 	authRequired.GET("/exercises", exHandler.List)
 	authRequired.POST("/training_records", workoutHandler.CreateWorkoutRecord)
 	authRequired.GET("/training_records/date", workoutHandler.GetWorkoutRecordsByDate)
@@ -61,4 +65,6 @@ func Register(e *echo.Echo, conn *gorm.DB) {
 	authRequired.GET("/home/summary", summaryHandler.GetHomeSummary)
 	authRequired.GET("/ranking/monthly_gym_days", rankingHandler.MonthlyGymDays)
 	authRequired.GET("/timeline", timelineHandler.GetTimeline)
+	authRequired.POST("/timeline/:recordId/like", workoutLikeHandler.Like)
+	authRequired.DELETE("/timeline/:recordId/like", workoutLikeHandler.Unlike)
 }

@@ -18,11 +18,11 @@ import (
 
 // TimelineService のモック
 type mockTimelineService struct {
-	GetTimelineFunc func() ([]service.TimelineItem, error)
+	GetTimelineFunc func(userID uint) ([]service.TimelineItem, error)
 }
 
-func (m *mockTimelineService) GetTimeline() ([]service.TimelineItem, error) {
-	return m.GetTimelineFunc()
+func (m *mockTimelineService) GetTimeline(userID uint) ([]service.TimelineItem, error) {
+	return m.GetTimelineFunc(userID)
 }
 
 func TestTimelineHandler_GetTimeline(t *testing.T) {
@@ -41,7 +41,7 @@ func TestTimelineHandler_GetTimeline(t *testing.T) {
 		{
 			name: "【正常系】タイムラインを取得できること",
 			mockSvc: &mockTimelineService{
-				GetTimelineFunc: func() ([]service.TimelineItem, error) {
+				GetTimelineFunc: func(userID uint) ([]service.TimelineItem, error) {
 					return []service.TimelineItem{
 						{
 							RecordID:     1,
@@ -51,6 +51,7 @@ func TestTimelineHandler_GetTimeline(t *testing.T) {
 							BodyWeight:   70.5,
 							TrainedOn:    now,
 							Comment:      "今日は自己ベスト！",
+							LikedByMe:    false,
 						},
 					}, nil
 				},
@@ -61,7 +62,7 @@ func TestTimelineHandler_GetTimeline(t *testing.T) {
 		{
 			name: "【異常系】サービス層でエラーが返された場合、500が返ること",
 			mockSvc: &mockTimelineService{
-				GetTimelineFunc: func() ([]service.TimelineItem, error) {
+				GetTimelineFunc: func(userID uint) ([]service.TimelineItem, error) {
 					return nil, errors.New("db error")
 				},
 			},
@@ -77,6 +78,7 @@ func TestTimelineHandler_GetTimeline(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/timeline", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
+			c.Set("user_id", uint(1))
 
 			err := h.GetTimeline(c)
 			if err != nil {
