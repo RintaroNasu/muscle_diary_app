@@ -11,6 +11,7 @@
 2. **カレンダー記録表示機能**: 記録がある日にドット表示し、日付をタップすると当日の記録一覧が出ます。<br>
 3. **グラフ記録表示機能**: 期間を指定して回数・重量などの推移を折れ線／棒グラフで可視化します。<br>
 4. **ランキング表示機能**: 月間のジム日数ランキングを可視化して、みんなのモチベーションの向上を計ります。<br>
+
 ---
 
 ## デモ画像
@@ -82,10 +83,9 @@
 
 ### インフラ
 
-・**[Google Cloud Platform](https://cloud.google.com/)**: Googleが提供するクラウドコンピューティングサービス<br>
+・**[Google Cloud Platform](https://cloud.google.com/)**: Google が提供するクラウドコンピューティングサービス<br>
 ・**[Neon](https://neon.com/)**: サーバーレスで自動スケーリング可能なクラウドデータベースサービス<br>
 ・**[Docker](https://docs.docker.com/)**: コンテナ化プラットフォームで環境構築を効率化<br>
-
 
 ### アーキテクチャ概要
 
@@ -105,7 +105,9 @@ Cloud Run にデプロイしています。データベースは Neon を利用�
 ・ フロントはローカル環境からでも Cloud Run の本番 API を直接叩けます。
 
 ### **バックエンド(公開済)**
+
 ##### API ベース URL
+
 - https://muscle-diary-backend-259090965328.asia-northeast1.run.app
 
 ---
@@ -119,6 +121,16 @@ Cloud Run にデプロイしています。データベースは Neon を利用�
 ```bash
 git clone https://github.com/RintaroNasu/muscle_diary_app.git
 ```
+
+### 前提環境
+
+本プロジェクトでは以下の環境が必要です：
+
+- Flutter 開発環境（FVM / Android Studio / Xcode）
+  → 初めての方は https://www.sejuku.net/blog/123973 を推奨
+
+- Go（バックエンド）
+  → Go の公式インストール手順：https://go.dev/doc/install
 
 ### フロントエンド側セットアップ
 
@@ -181,6 +193,7 @@ go run cmd/server/main.go
 ```
 
 ## フロントのローカル環境で本番 API を使用する方法
+
 通常はローカル API が使われますが、以下のように --dart-define をつけて起動することで
 本番 API に切り替えて起動できます。
 
